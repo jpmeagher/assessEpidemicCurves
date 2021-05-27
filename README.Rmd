@@ -55,3 +55,4 @@ ggplot(covid_incidence_roi_epidemiological_date) +
   )
 ```
 
+Analyses are based on a hierarchical model for daily incidence count of COVID-19 \(\boldsymbol y = \left(y_0, y_1, \dots, y_N \right)^\top\)

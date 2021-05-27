@@ -35,3 +35,7 @@ We consider the COVID-19 epidemic in the Republic of Ireland from March
 1, 2020 to 28 February, 2021.
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+Analyses are based on a hierarchical model for daily incidence count of
+COVID-19
+**y** = (*y*<sub>0</sub>,*y*<sub>1</sub>,…,*y*<sub>*N*</sub>)<sup>⊤</sup>
