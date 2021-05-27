@@ -31,3 +31,27 @@ devtools::install_github("jpmeagher/assessEpidemicCurves")
 ```
 
 ## Case Study: COVID-19 in the Republic of Ireland
+
+```{r}
+library(assessEpidemicCurves)
+library(ggplot2)
+```
+
+
+We consider the COVID-19 epidemic in the Republic of Ireland from March 1, 2020 to 28 February, 2021.
+
+```{r, echo = FALSE, fig.height=3.5, fig.width=7}
+ggplot(covid_incidence_roi_epidemiological_date) +
+  geom_bar(
+    aes(x = date, y =  count), stat = "identity",
+    alpha = 0.5
+  ) +
+  theme_classic() +
+  labs(
+    title = "COVID-19 in the Republic of Ireland",
+    x = "Epidimiological Date",
+    y = "Reported Cases",
+    color = NULL
+  )
+```
+

@@ -19,6 +19,10 @@ random variable.}
 \item{perform_checks}{Logical. Should function arguments be checked to ensure
 they satisfy any constraints.}
 }
+\value{
+A named vector of length 2. The shape and rate for the inverse-gamma random
+  variable.
+}
 \description{
 Convert the first two moments of an inverse-gamma distribution to shape and rate
 parameters.

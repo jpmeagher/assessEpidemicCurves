@@ -35,7 +35,7 @@ convert_gamma_moments <- function(expectation, standard_deviation, perform_check
 #' @param perform_checks Logical. Should function arguments be checked to ensure
 #'   they satisfy any constraints.
 #'
-#' @returnA named vector of length 2. The shape and rate for the inverse-gamma random
+#' @return A named vector of length 2. The shape and rate for the inverse-gamma random
 #'   variable.
 #' @export
 #'
