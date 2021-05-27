@@ -7,16 +7,16 @@
 convert_gamma_moments(expectation, standard_deviation, perform_checks = TRUE)
 }
 \arguments{
-\item{expectation}{A scalar. The expected value of the Gamma random variable.}
+\item{expectation}{A scalar. The expected value of the gamma random variable.}
 
-\item{standard_deviation}{A scalar. The standard deviation of the Gamma
+\item{standard_deviation}{A scalar. The standard deviation of the gamma
 random variable.}
 
 \item{perform_checks}{Logical. Should function arguments be checked to ensure
 they satisfy any constraints.}
 }
 \value{
-A named vector of length 2. The shape and rate for the Gamma random
+A named vector of length 2. The shape and rate for the gamma random
   variable.
 }
 \description{
