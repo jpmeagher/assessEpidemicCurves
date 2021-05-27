@@ -1,5 +1,7 @@
 ---
-output: github_document
+output: 
+    github_document:
+      pandoc_args: --webtex
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -55,4 +57,27 @@ ggplot(covid_incidence_roi_epidemiological_date) +
   )
 ```
 
-Analyses are based on a hierarchical model for daily incidence count of COVID-19 \(\boldsymbol y = \left(y_0, y_1, \dots, y_N \right)^\top\)
+## The model for epidemic curves
+
+Analyses are based on the hierarchical model for the daily incidence count of COVID-19 
+$$
+\begin{aligned}
+p \left( y_t \mid \mu_t, \boldsymbol \eta_t, \boldsymbol \omega \right) &= \operatorname{Pois} \left( y_t \mid \mu_t + \sum_{s = 1}^t \omega_s \eta_{t-s} \right), \\
+p \left( \eta_t \mid k, R_t \right) &= \operatorname{Gamma} \left( \eta_t \mid y_t k, \frac{k}{R_t}\right),
+\end{aligned}
+$$
+where \(\boldsymbol y = \left(y_0, y_1, \dots, y_N \right)^\top\) is the epidemic curve seeded by \(y_0\), \(\boldsymbol \mu = \left(\mu_0, \mu_1, \dots, \mu_N \right)^\top\) is the rate at which cases are imported, \(\boldsymbol \omega = \left(\omega_1, \omega_2, \dots \right)^\top\) is the generation interval pmf, \(\boldsymbol \eta_t = \left( \eta_0, \eta_1, \dots, \eta_{t - 1} \right)\) is the disease momentum up to day \(t\), \(k\) is the case dispersion parameter and \(\boldsymbol R = \left(R_0, R_1, \dots, R_N \right)^\top\) are the cohort reproduction numbers.
+
+This model is underpinned by a branching process model for secondary infections such that
+$$
+\begin{aligned}
+p \left( z_{t, i} \mid \nu_{t_i} \right) &= \operatorname{Pois} \left( z_{t, i} \mid \nu_{t, i} \right), \\
+p \left( \nu_{t, i} \mid k, R_t \right) &= \operatorname{Gamma} \left( k, \frac{k}{R_t}\right),
+\end{aligned}
+$$
+where \(z_{t, i}\) is the number of secondary infections arising from the \(i^{th}\) index case on day \(t\) with an individual reproduction number \(\nu_{t, i}\). Within this model, \(\mathbb E \left[ z_{t, i}\right] = R_t\) and \(\operatorname{Var} \left( z_{t, i}\right) = R_t + R_t^2 / k \). This links to the model for \(y_t\) via
+$$
+\eta_t = \sum_{i = 1}^{y_t} \nu_{t, i}.
+$$
+Thus, the hierarchical model allows for heterogeneous disease reproduction resulting in over dispersed distributions of secondary infections, that is, superspreading is a feature of the epidemic. Note that \(\lim_{k \to \infty} \operatorname{Var} \left( \nu_{t, i}\right) = 0\) and so this model admids homogeneous disease reproduction as a special case.
+
