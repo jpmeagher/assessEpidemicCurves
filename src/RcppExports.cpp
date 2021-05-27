@@ -7,9 +7,11 @@
 using namespace Rcpp;
 
 
+RcppExport SEXP _rcpp_module_boot_stan_fit4hetero_fixed_k_lgp_Rt_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4homo_hist_Rt_mod();
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_rcpp_module_boot_stan_fit4hetero_fixed_k_lgp_Rt_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4hetero_fixed_k_lgp_Rt_mod, 0},
     {"_rcpp_module_boot_stan_fit4homo_hist_Rt_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4homo_hist_Rt_mod, 0},
     {NULL, NULL, 0}
 };

@@ -36,7 +36,7 @@ We consider the COVID-19 epidemic in the Republic of Ireland from March
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-## The model for epidemic curves
+## The generative model for epidemic curves
 
 Analyses are based on the hierarchical model for the daily incidence
 count of COVID-19
@@ -106,8 +106,45 @@ This links to the model for
 
 Thus, the hierarchical model allows for heterogeneous disease
 reproduction resulting in over dispersed distributions of secondary
-infections, that is, superspreading is a feature of the epidemic. Note
-that
+infections, that is, superspreading may be a feature of the epidemic.
+Note that
 ![\\lim\_{k \\to \\infty} \\operatorname{Var} \\left( \\nu\_{t, i}\\right) = 0](https://latex.codecogs.com/png.latex?%5Clim_%7Bk%20%5Cto%20%5Cinfty%7D%20%5Coperatorname%7BVar%7D%20%5Cleft%28%20%5Cnu_%7Bt%2C%20i%7D%5Cright%29%20%3D%200 "\lim_{k \to \infty} \operatorname{Var} \left( \nu_{t, i}\right) = 0")
-and so this model admids homogeneous disease reproduction as a special
+and so this model admits homogeneous disease reproduction as a special
 case.
+
+## Prior specification
+
+In order to fit this generative model to data, we fix import rates
+![\\boldsymbol \\mu = \\left(\\mu\_0, \\mu\_1, \\dots, \\mu\_N \\right)^\\top](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20%5Cmu%20%3D%20%5Cleft%28%5Cmu_0%2C%20%5Cmu_1%2C%20%5Cdots%2C%20%5Cmu_N%20%5Cright%29%5E%5Ctop "\boldsymbol \mu = \left(\mu_0, \mu_1, \dots, \mu_N \right)^\top"),
+the generation interval pmf
+![\\boldsymbol \\omega = \\left(\\omega\_1, \\omega\_2, \\dots \\right)^\\top](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20%5Comega%20%3D%20%5Cleft%28%5Comega_1%2C%20%5Comega_2%2C%20%5Cdots%20%5Cright%29%5E%5Ctop "\boldsymbol \omega = \left(\omega_1, \omega_2, \dots \right)^\top"),
+and case dispersion parameter
+![k](https://latex.codecogs.com/png.latex?k "k"). We then propose a
+log-Gaussian process prior for
+![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R")
+such that
+
+![
+\\begin{aligned}
+\\log R\_t &=  f \\left( t \\right), \\\\
+f \\left( t \\right) &\\sim \\mathcal{GP} \\left( 0, k \\left(t, t' \\right) \\right), \\\\
+k \\left(t, t' \\right) & = \\alpha^2 \\exp \\left( - \\frac{\\left(t - t'\\right)^2}{2 \\ell^2}\\right),
+\\end{aligned}
+](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%5Clog%20R_t%20%26%3D%20%20f%20%5Cleft%28%20t%20%5Cright%29%2C%20%5C%5C%0Af%20%5Cleft%28%20t%20%5Cright%29%20%26%5Csim%20%5Cmathcal%7BGP%7D%20%5Cleft%28%200%2C%20k%20%5Cleft%28t%2C%20t%27%20%5Cright%29%20%5Cright%29%2C%20%5C%5C%0Ak%20%5Cleft%28t%2C%20t%27%20%5Cright%29%20%26%20%3D%20%5Calpha%5E2%20%5Cexp%20%5Cleft%28%20-%20%5Cfrac%7B%5Cleft%28t%20-%20t%27%5Cright%29%5E2%7D%7B2%20%5Cell%5E2%7D%5Cright%29%2C%0A%5Cend%7Baligned%7D%0A "
+\begin{aligned}
+\log R_t &=  f \left( t \right), \\
+f \left( t \right) &\sim \mathcal{GP} \left( 0, k \left(t, t' \right) \right), \\
+k \left(t, t' \right) & = \alpha^2 \exp \left( - \frac{\left(t - t'\right)^2}{2 \ell^2}\right),
+\end{aligned}
+")
+
+where amplitude
+![\\alpha &gt; 0](https://latex.codecogs.com/png.latex?%5Calpha%20%3E%200 "\alpha > 0")
+and length-scale
+![\\ell &gt; 0](https://latex.codecogs.com/png.latex?%5Cell%20%3E%200 "\ell > 0")
+are specified a priori.
+
+## Model fitting
+
+The model described here can be computationally expensive to implement
+and so we only analyse only a subset of the data here

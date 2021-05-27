@@ -1,5 +1,4 @@
 //
-// Estimation of case R_t.
 // Stan implementation of Bertozzi et al. 2020 within a Bayesian framework
 // Adapted to discrete data.
 //
@@ -15,8 +14,9 @@ data{
   int<lower=1> delta; // bin width (days) for histogram estimator
   real<lower=0> mean_log_r; // prior mean for log reproduction numbers
   real<lower=0> sd_log_r; // prior standard deviation for log reproduction numbers
-  real<lower=0> nugget; // psi matrix regularising constant
-  int<lower=0> c; // Case count regularising constant
+  int<lower = 0> y_ahead; // forward observations
+  real<lower=0> mu_ahead; // forward daily import rate
+  int<lower=0> c; // case count regularising constant
 }
 transformed data{
   vector<lower=0>[D] y_reg; // regularised counts
@@ -44,28 +44,23 @@ parameters{
 }
 transformed parameters{
   vector<lower=0>[D] R; // time-dependent reproductive numbers
-  matrix[D, S] tmp_psi_matrix; // temporary matrix
   vector<lower=0>[D] psi; // local infection rate
   // reproduction number
   for (i in 1:D) {
-    R[i] = r[(i / delta) + 1]; // default integer rounding behaviour desired
+    R[D - i + 1] = r[((i -  1) / delta) + 1]; // default integer rounding behaviour desired
   }
   // burden of infection
-  tmp_psi_matrix = rep_matrix(negative_infinity(), D, S);
-  tmp_psi_matrix[1, 1] = log(nugget);
+  psi = rep_vector(0, D);
   for (i in 2:D) {
     if (i <= S) {
       for (j in 1:(i - 1)) {
-        tmp_psi_matrix[i, j] = log(y_reg[i-j] * R[i-j]) + log_omega[j];
+        psi[i] = psi[i] + (R[i-j] * y_reg[i-j] * omega[j]);
       }
     } else {
       for (j in 1:S) {
-        tmp_psi_matrix[i, j] = log(y_reg[i-j] * R[i-j]) + log_omega[j];
+        psi[i] = psi[i] + (R[i-j] * y_reg[i-j] * omega[j]);
       }
     }
-  }
-  for(i in 1:D) {
-    psi[i] = exp(log_sum_exp(tmp_psi_matrix[i, ]));
   }
 }
 model{
@@ -75,10 +70,16 @@ model{
 generated quantities{
   vector[D-D_seed] y_rep; // replicated daily case counts
   vector[D-D_seed] log_lik; // log likelihood
+  real<lower=0> psi_ahead; // forward burden of infection
+  real log_lik_ahead; // forward likelihood
 
   for (i in (D_seed+1):D) {
     log_lik[i-D_seed] = poisson_lpmf(y[i] | mu[i] + psi[i]);
     y_rep[i-D_seed] = poisson_rng(mu[i] + psi[i]);
   }
+
+  psi_ahead = 0;
+  for (i in 1:S) psi_ahead = psi_ahead + (R[D - i + 1] * y_reg[D - i + 1] * omega[i]);
+  log_lik_ahead = poisson_lpmf(y_ahead | mu_ahead + psi_ahead);
 }
 
