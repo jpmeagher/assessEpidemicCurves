@@ -4,6 +4,9 @@
 # assessEpidemicCurves
 
 <!-- badges: start -->
+
+[![Travis build
+status](https://travis-ci.com/jpmeagher/assessEpidemicCurves.svg?branch=master)](https://travis-ci.com/jpmeagher/assessEpidemicCurves)
 <!-- badges: end -->
 
 The goal of assessEpidemicCurves is to model epidemic curves under
