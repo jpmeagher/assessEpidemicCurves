@@ -1,0 +1,21 @@
+#' The 'assessEpidemicCurves' package.
+#'
+#' @description Superspreading is a feature of many epidemics. This phenomenon
+#'   is a consequence of heterogenous disease reproduction. This package
+#'   provides tools for estimating the cohort reproduction number, that is, the
+#'   expected number of secondary infections for each index case within a cohort
+#'   of individuals infected at a particular time, and assessing epidemic curves
+#'   for evidence of superspreading.
+#'
+#' @docType package
+#' @name assessEpidemicCurves-package
+#' @aliases assessEpidemicCurves
+#' @useDynLib assessEpidemicCurves, .registration = TRUE
+#' @import methods
+#' @import Rcpp
+#' @importFrom rstan sampling
+#'
+#' @references Stan Development Team (2020). RStan: the R interface to Stan. R
+#' package version 2.19.3. https://mc-stan.org
+#'
+NULL
