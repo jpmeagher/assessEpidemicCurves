@@ -28,7 +28,16 @@ devtools::install_github("jpmeagher/assessEpidemicCurves")
 
 ``` r
 library(assessEpidemicCurves)
+library(rstan)
+library(loo)
 library(ggplot2)
+library(dplyr)
+library(magrittr)
+library(lubridate)
+library(EpiEstim)
+#> Warning in .recacheSubclasses(def@className, def, env): undefined subclass
+#> "numericVector" of class "Mnumeric"; definition not updated
+library(knitr)
 ```
 
 We consider the COVID-19 epidemic in the Republic of Ireland from March
@@ -147,4 +156,184 @@ are specified a priori.
 ## Model fitting
 
 The model described here can be computationally expensive to implement
-and so we only analyse only a subset of the data here
+and so we only analyse only a subset of the data here. We examine
+reported COVID-19 cases from December 10, 2020, to January 31 2020,
+allowing the 5 days from December 5 to December 9 seed the epidemic.
+
+We assume that
+![\\mu\_t = 1](https://latex.codecogs.com/png.latex?%5Cmu_t%20%3D%201 "\mu_t = 1")
+for all ![t](https://latex.codecogs.com/png.latex?t "t") and that
+![\\boldsymbol \\omega](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20%5Comega "\boldsymbol \omega")
+is a discretised gamma distribution such that generation intervals have
+a mean of 5 days and standard deviation of 2.5 and are truncated at 21
+days. The log-Gaussian process prior for
+![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R")
+is specified by
+![\\alpha = 1](https://latex.codecogs.com/png.latex?%5Calpha%20%3D%201 "\alpha = 1")
+and
+![\\ell = 10](https://latex.codecogs.com/png.latex?%5Cell%20%3D%2010 "\ell = 10").
+We fit two models,
+![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
+where
+![k = 0.1](https://latex.codecogs.com/png.latex?k%20%3D%200.1 "k = 0.1")
+and
+![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty")
+where
+![k \\to \\infty](https://latex.codecogs.com/png.latex?k%20%5Cto%20%5Cinfty "k \to \infty").
+
+We adjust the epidemic curve for day of the week effects by taking
+![y\_t](https://latex.codecogs.com/png.latex?y_t "y_t") to be the 7-day
+moving average of reported cases on day
+![t](https://latex.codecogs.com/png.latex?t "t").
+
+``` r
+df <- covid_incidence_roi_epidemiological_date %>% 
+  mutate(ma_count = stats::filter(count, rep(1/7, 7)) %>% round) %>% 
+  filter(date >= dmy(05122020) & date <= dmy(31012021)) 
+
+D <- nrow(df)
+# initialise heterogeneous disease reproduction
+init_list <- lapply(
+  1:4, function(i) {
+    initialise_lgp_Rt(
+      epidemic_curve = df$ma_count, 
+      gp_amplitude = 1, k = 0.1
+)
+  } )
+# fit heterogeneous disease reproduction
+M_0.1 <- fit_Rt_lgp(
+  epidemic_curve = df$ma_count, seed_days = 5,
+  import_rate = rep(1, D), 
+  generation_interval_mean = 5, generation_interval_sd = 2.5,
+  generation_interval_length = 21,
+  gp_amplitude = 1, gp_length_scale = 10,
+  k = 0.1,
+  cores = 4, refresh = 500, 
+  init = init_list
+)
+# fit homogeneous disease reproduction
+M_inf <- fit_Rt_lgp(
+  epidemic_curve = df$ma_count, seed_days = 5,
+  import_rate = rep(1, D), 
+  generation_interval_mean = 5, generation_interval_sd = 2.5,
+  generation_interval_length = 21,
+  gp_amplitude = 1, gp_length_scale = 10,
+  k = Inf,
+  cores = 4, refresh = 500,
+  control = list(max_treedepth = 15)
+)
+
+wt <- wallinga_teunis(
+  incid = df$ma_count, 
+  method = "parametric_si",
+  config = list(
+    t_start = (6:D),
+    t_end = 6:D,
+    mean_si = 5,
+    std_si = 2.5,
+    n_sim = 3
+  )
+)
+```
+
+Having fit the models to the epidemic curve we can explore the fitted
+posterior for
+![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R").
+Note that heterogeneous disease reproduction results in greater
+uncertainty on estimates for
+![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") on each day. We
+include Wallinga & Teunis’ estimate available with the `EpiEstem`
+packagfe for comparison. All three estimate are in broad agreement up
+until the final days of the assessed epidemic curve.
+
+``` r
+R_0.1 <- rstan::extract(M_0.1, "R") %>% 
+  as.data.frame() %>% 
+  magrittr::extract(sample.int(4000, 100), ) %>%
+  t() %>% 
+  unname() %>% 
+  data.frame(date = df$date, R_0.1 = .) %>% 
+  reshape2::melt(id = "date")
+
+R_inf <- rstan::extract(M_inf, "R") %>% 
+  as.data.frame() %>% 
+  magrittr::extract(sample.int(4000, 100), ) %>%
+  t() %>% 
+  unname() %>% 
+  data.frame(date = df$date, R_inf = .) %>% 
+  reshape2::melt(id = "date") 
+
+R <- rbind(
+  cbind(R_0.1, model = "0.1"),
+  cbind(R_inf, model = "inf")
+) 
+
+y_scalar <- 2.5
+R %>%
+  ggplot() +
+  geom_bar(
+    data = df,
+    aes(x = date, y = y_scalar * ma_count /  max(df$ma_count) ), stat = "identity",
+    alpha = 0.5
+  ) +
+  geom_line(aes(x = date, y = value, group = variable, color = model), alpha = 0.25) +
+  geom_hline(yintercept = 1, lty = 3) +
+  scale_color_viridis_d(labels = c("0.1", bquote(infinity))) +
+  scale_y_continuous(
+    bquote("R"["t"]),
+    sec.axis = sec_axis(~ . * max(df$ma_count) / y_scalar, name = "7 Day Moving Average Incidence")
+  ) +
+  theme_classic() +
+  guides(colour = guide_legend(override.aes = list(alpha = 1))) +
+  geom_line(
+    data = data.frame(
+      date = df$date[6:D], R = wt$R$`Mean(R)`
+    ),
+    aes(x = date, y = R), lwd = 1.5
+  ) +
+  labs(
+    title = "Fitted reproduction numbers",
+    x = "Epidemiological Date",
+    color = "k"
+  )
+#> Warning: Use of `df$ma_count` is discouraged. Use `ma_count` instead.
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+
+## Model comparison
+
+PSIS-LOO provides an easy to implement measure of model fit.
+
+``` r
+loo_0.1 <- loo(M_0.1, moment_match = TRUE)
+#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
+loo_inf <- loo(M_inf, moment_match = TRUE)
+#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
+
+loo_compare(loo_0.1, loo_inf) %>% 
+  kable(digits = 2, caption = "PSIS-LOO model selection favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2). This supports the conclusion that superspreading is a feature of the COVID-19 epidemic in the Republic of Ireland.")
+```
+
+|        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
+|:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
+| model1 |       0.00 |     0.00 |   -265.81 |          3.62 |   6.25 |       1.17 | 531.61 |      7.24 |
+| model2 |     -16.55 |     5.93 |   -282.35 |          8.57 |   9.07 |       2.20 | 564.71 |     17.13 |
+
+PSIS-LOO model selection favours
+![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
+(model1) over
+![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
+(model2). This supports the conclusion that superspreading is a feature
+of the COVID-19 epidemic in the Republic of Ireland.
+
+This model comparison supports
+![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
+over
+![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty"),
+indicating that superspreading is a feature of the COVID-19 epidemic in
+the Republic of Ireland and that estimates for
+![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R")
+offered by
+![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
+should be preferred.

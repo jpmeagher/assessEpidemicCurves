@@ -6,7 +6,7 @@ Author: Joe Meagher
 Maintainer: Joe Meagher <josephmeagher07@gmail.com>
 Description: Superspreading is a feature of many epidemics. 
     This phenomenon is a consequence of heterogenous disease reproduction.
-    This package provides tools for estimating the cohort reproduction number, that is,
+    Here we provide tools for estimating the cohort reproduction number, that is,
     the expected number of secondary infections for each index case within a cohort of
     individuals infected at a particular time, and assessing epidemic curves for evidence 
     of superspreading.
