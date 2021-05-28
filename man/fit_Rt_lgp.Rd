@@ -14,8 +14,9 @@ fit_Rt_lgp(
   gp_amplitude = 1,
   gp_length_scale = 10,
   k = 0.1,
-  next_day_cases = NA,
-  next_day_import_rate = NA,
+  ahead = FALSE,
+  next_day_cases = 1,
+  next_day_import_rate = 1,
   nugget = 1e-06,
   c = 1,
   perform_checks = TRUE,
@@ -50,6 +51,8 @@ for the underlying Gaussian process.}
 \item{k}{A positive scalar. The case dispersion parameter. Setting to Inf
 allows for homogeneous disease reproduction.}
 
+\item{ahead}{Logical. Include a 1 step ahead prediction.}
+
 \item{next_day_cases}{An integer scalar. One day ahead case count. Allows
 model validation.}
 
@@ -73,16 +76,16 @@ Bayesian Estimation of time-varying reproduction numbers
 \examples{
 D <- 30
 df <- covid_incidence_roi_epidemiological_date[1:D, ]
-fit <- fit_Rt_lgp(
-  epidemic_curve = df$count, seed_days = 5,
-  import_rate = rep(1, D),
-  generation_interval_mean = 5, generation_interval_sd = 2.5,
-  generation_interval_length = 21,
-  gp_amplitude = 1, gp_length_scale = 10,
-  k = 0.1,
-  next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
-  next_day_import_rate = 1, iter = 1000
-  )
+# fit <- fit_Rt_lgp(
+#   epidemic_curve = df$count, seed_days = 5,
+#   import_rate = rep(1, D),
+#   generation_interval_mean = 5, generation_interval_sd = 2.5,
+#   generation_interval_length = 21,
+#   gp_amplitude = 1, gp_length_scale = 10,
+#   k = 0.1,
+#   next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
+#   next_day_import_rate = 1, iter = 1000
+#   )
 }
 \seealso{
 homo_hist_Rt_stan

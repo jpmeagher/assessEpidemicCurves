@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![Travis build status](https://travis-ci.com/jpmeagher/assessEpidemicCurves.svg?branch=master)](https://travis-ci.com/jpmeagher/assessEpidemicCurves)
 <!-- badges: end -->
 
-The goal of assessEpidemicCurves is to model epidemic curves under heterogeneous disease reproduction, providing estimates for the time-varying reproduction number and assessing epidemic curves for evidence of superspreading. This package accompanies [Reference]
+The goal of assessEpidemicCurves is to model epidemic curves under heterogeneous disease reproduction, providing estimates for the time-varying reproduction number and assessing epidemic curves for evidence of superspreading. This package accompanies [Reference our paper here]
 
 ## Installation
 
@@ -102,9 +102,9 @@ where amplitude \(\alpha > 0\) and length-scale \(\ell > 0\) are specified a pri
 
 ## Model fitting
 
-The model described here can be computationally expensive to implement and so we only analyse only a subset of the data here. We examine reported COVID-19 cases from December 10, 2020, to January 31 2020, allowing the 5 days from December 5 to December 9 seed the epidemic. 
+The model described here can be computationally expensive to implement and so we only analyse a subset of the data here. We examine reported COVID-19 cases from December 10, 2020, to January 31 2020, allowing the 5 days from December 5 to December 9 inclusive to seed the epidemic. 
 
-We assume that \(\mu_t = 1\) for all \(t\) and that \(\boldsymbol \omega\) is a discretised gamma distribution such that generation intervals have a mean of 5 days and standard deviation of 2.5 and are truncated at 21 days. The log-Gaussian process prior for \(\boldsymbol R\) is specified by \(\alpha = 1\) and \(\ell = 10\). We fit two models, \(\mathcal M_{0.1}\) where \(k = 0.1\) and \(\mathcal M_\infty\) where \(k \to \infty\).
+We assume that \(\mu_t = 1\) for all \(t\) and that \(\boldsymbol \omega\) is a discretised gamma distribution such that generation intervals have a mean of 5 days, standard deviation of 2.5, and a maximum of 21 days. The log-Gaussian process prior for \(\boldsymbol R\) is specified by \(\alpha = 1\) and \(\ell = 10\). We fit two models, \(\mathcal M_{0.1}\) where \(k = 0.1\) and \(\mathcal M_\infty\) where \(k \to \infty\).
 
 We adjust the epidemic curve for day of the week effects by taking \(y_t\) to be the 7-day moving average of reported cases on day \(t\).
 
@@ -158,7 +158,7 @@ wt <- wallinga_teunis(
 )
 ```
 
-Having fit the models to the epidemic curve we can explore the fitted posterior for \(\boldsymbol R\). Note that heterogeneous disease reproduction results in greater uncertainty on estimates for \(R_t\) on each day. We include Wallinga & Teunis' estimate available with the `EpiEstem` packagfe for comparison. All three estimate are in broad agreement up until the final days of the assessed epidemic curve.
+Having fit the models to the epidemic curve we can explore the fitted posterior for \(\boldsymbol R\). Note that heterogeneous disease reproduction results in greater uncertainty on estimates for \(R_t\) on each day. We include Wallinga & Teunis' estimate for \(\boldsymbol R\), implemented in the `EpiEstem` package, for comparison. All three estimates are in broad agreement up until the final days of the assessed period. The disagreement at this point is consequence of the differing estimation procedures.
 
 ```{r, fig.height=3.5, fig.width=7}
 R_0.1 <- rstan::extract(M_0.1, "R") %>% 
@@ -214,15 +214,15 @@ R %>%
 
 ## Model comparison
 
-PSIS-LOO provides an easy to implement measure of model fit.
+PSIS-LOO provides an easy to implement measure of model fit. All Pareto-\(k\) diagnostic values are less than 0.7, indicating that both models fit the data well and estimates for the expected log point-wise predictive density (elpd) for a new dataset are reliable. 
 
 ```{r}
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
 loo_inf <- loo(M_inf, moment_match = TRUE)
 
 loo_compare(loo_0.1, loo_inf) %>% 
-  kable(digits = 2, caption = "PSIS-LOO model selection favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2). This supports the conclusion that superspreading is a feature of the COVID-19 epidemic in the Republic of Ireland.")
+  kable(digits = 2, caption = "PSIS-LOO model selection favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
   
 ```
 
-This model comparison supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that superspreading is a feature of the COVID-19 epidemic in the Republic of Ireland and that estimates for \(\boldsymbol R\) offered by \(\mathcal M_{0.1}\) should be preferred.
+This model comparison supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that superspreading is a feature of the COVID-19 epidemic in the Republic of Ireland. This suggests that estimates for \(\boldsymbol R\) offered by \(\mathcal M_{0.1}\) provide a more appropriate quantification of uncertainty and should be preferred to those of \(\mathcal M_{\infty}\).

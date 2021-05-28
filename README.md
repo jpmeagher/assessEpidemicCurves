@@ -12,7 +12,8 @@ status](https://travis-ci.com/jpmeagher/assessEpidemicCurves.svg?branch=master)]
 The goal of assessEpidemicCurves is to model epidemic curves under
 heterogeneous disease reproduction, providing estimates for the
 time-varying reproduction number and assessing epidemic curves for
-evidence of superspreading. This package accompanies \[Reference\]
+evidence of superspreading. This package accompanies \[Reference our
+paper here\]
 
 ## Installation
 
@@ -156,17 +157,17 @@ are specified a priori.
 ## Model fitting
 
 The model described here can be computationally expensive to implement
-and so we only analyse only a subset of the data here. We examine
-reported COVID-19 cases from December 10, 2020, to January 31 2020,
-allowing the 5 days from December 5 to December 9 seed the epidemic.
+and so we only analyse a subset of the data here. We examine reported
+COVID-19 cases from December 10, 2020, to January 31 2020, allowing the
+5 days from December 5 to December 9 inclusive to seed the epidemic.
 
 We assume that
 ![\\mu\_t = 1](https://latex.codecogs.com/png.latex?%5Cmu_t%20%3D%201 "\mu_t = 1")
 for all ![t](https://latex.codecogs.com/png.latex?t "t") and that
 ![\\boldsymbol \\omega](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20%5Comega "\boldsymbol \omega")
 is a discretised gamma distribution such that generation intervals have
-a mean of 5 days and standard deviation of 2.5 and are truncated at 21
-days. The log-Gaussian process prior for
+a mean of 5 days, standard deviation of 2.5, and a maximum of 21 days.
+The log-Gaussian process prior for
 ![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R")
 is specified by
 ![\\alpha = 1](https://latex.codecogs.com/png.latex?%5Calpha%20%3D%201 "\alpha = 1")
@@ -242,9 +243,12 @@ posterior for
 Note that heterogeneous disease reproduction results in greater
 uncertainty on estimates for
 ![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") on each day. We
-include Wallinga & Teunis’ estimate available with the `EpiEstem`
-packagfe for comparison. All three estimate are in broad agreement up
-until the final days of the assessed epidemic curve.
+include Wallinga & Teunis’ estimate for
+![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R"),
+implemented in the `EpiEstem` package, for comparison. All three
+estimates are in broad agreement up until the final days of the assessed
+period. The disagreement at this point is consequence of the differing
+estimation procedures.
 
 ``` r
 R_0.1 <- rstan::extract(M_0.1, "R") %>% 
@@ -303,7 +307,11 @@ R %>%
 
 ## Model comparison
 
-PSIS-LOO provides an easy to implement measure of model fit.
+PSIS-LOO provides an easy to implement measure of model fit. All
+Pareto-![k](https://latex.codecogs.com/png.latex?k "k") diagnostic
+values are less than 0.7, indicating that both models fit the data well
+and estimates for the expected log point-wise predictive density (elpd)
+for a new dataset are reliable.
 
 ``` r
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
@@ -312,28 +320,29 @@ loo_inf <- loo(M_inf, moment_match = TRUE)
 #> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
 
 loo_compare(loo_0.1, loo_inf) %>% 
-  kable(digits = 2, caption = "PSIS-LOO model selection favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2). This supports the conclusion that superspreading is a feature of the COVID-19 epidemic in the Republic of Ireland.")
+  kable(digits = 2, caption = "PSIS-LOO model selection favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
 ```
 
 |        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
 |:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
-| model1 |       0.00 |     0.00 |   -265.81 |          3.62 |   6.25 |       1.17 | 531.61 |      7.24 |
-| model2 |     -16.55 |     5.93 |   -282.35 |          8.57 |   9.07 |       2.20 | 564.71 |     17.13 |
+| model1 |       0.00 |     0.00 |   -266.07 |          3.61 |   6.42 |       1.17 | 532.14 |      7.22 |
+| model2 |     -16.09 |     5.78 |   -282.16 |          8.41 |   8.88 |       2.10 | 564.31 |     16.81 |
 
 PSIS-LOO model selection favours
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
 (model1) over
 ![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
-(model2). This supports the conclusion that superspreading is a feature
-of the COVID-19 epidemic in the Republic of Ireland.
+(model2).
 
 This model comparison supports
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
 over
 ![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty"),
 indicating that superspreading is a feature of the COVID-19 epidemic in
-the Republic of Ireland and that estimates for
+the Republic of Ireland. This suggests that estimates for
 ![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R")
 offered by
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
-should be preferred.
+provide a more appropriate quantification of uncertainty and should be
+preferred to those of
+![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}").
