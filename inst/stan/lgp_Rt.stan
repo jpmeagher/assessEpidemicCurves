@@ -112,5 +112,4 @@ generated quantities{
     log_lik_ahead[M] = poisson_lpmf(y_ahead | mu_ahead + psi_ahead[M]);
     y_rep_ahead[M] = poisson_rng(mu_ahead + psi_ahead[M]);
   }
-
 }

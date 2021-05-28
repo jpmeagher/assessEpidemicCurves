@@ -1,6 +1,6 @@
 #' Bayesian Estimation of time-varying reproduction numbers
 #'
-#' @inheritParams homo_hist_Rt_stan
+#' @inheritParams fit_Rt_hist
 #' @inheritParams convert_gamma_moments
 #' @param gp_amplitude A positive scalar. The amplitude hyper-parameter for the
 #'   underlying Gaussian process.
@@ -26,6 +26,7 @@
 #' #   generation_interval_length = 21,
 #' #   gp_amplitude = 1, gp_length_scale = 10,
 #' #   k = 0.1,
+#' #   ahead = TRUE,
 #' #   next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
 #' #   next_day_import_rate = 1, iter = 1000
 #' #   )
@@ -63,6 +64,6 @@ fit_Rt_lgp <- function(
     y_ahead = next_day_cases, mu_ahead = next_day_import_rate,
     nugget = nugget, c = c
   )
-  out <- rstan::sampling(stanmodels$lgp_Rt_fixed_k, data = standata, ...)
+  out <- rstan::sampling(stanmodels$lgp_Rt, data = standata, ...)
   out
 }

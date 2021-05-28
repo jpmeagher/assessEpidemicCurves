@@ -24,28 +24,47 @@
 #' @param next_day_import_rate A positice scalar. Import rate for the day ahead.
 #' @param c A small positive integer A regularising constant.
 #' @param ... Arguments passed to `rstan::sampling` (e.g. iter, chains).
+#' @inheritParams fit_Rt_lgp
+#' @inheritParams convert_gamma_moments
 #'
 #' @return An object of class `stanfit` returned by `rstan::sampling`
 #'
 #' @examples
 #' D <- 30
 #' df <- covid_incidence_roi_epidemiological_date[1:D, ]
-#' fit <- homo_hist_Rt_stan(
-#'   epidemic_curve = df$count, seed_days = 5,
-#'   import_rate = rep(1, D),
-#'   next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
-#'   next_day_import_rate = 1
-#'   )
-homo_hist_Rt_stan <- function(
+#' # fit <- fit_Rt_hist(
+#' #   epidemic_curve = df$count, seed_days = 5,
+#' #   import_rate = rep(1, D),
+#' #   generation_interval_mean = 5, generation_interval_sd = 2.5,
+#' #   generation_interval_length = 21,
+#' #   gp_amplitude = 1, gp_length_scale = 10,
+#' #   k = 0.1,
+#' #   ahead = TRUE,
+#' #   next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
+#' #   next_day_import_rate = 1, iter = 1000
+#' #   )
+fit_Rt_hist <- function(
   epidemic_curve, seed_days,
   import_rate,
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
   bin_width = 7,
   r_prior_mean = 0, r_prior_sd = 1,
+  k = 0.1,
+  ahead = FALSE,
   next_day_cases, next_day_import_rate,
   c = 1,
+  perform_checks = TRUE,
   ...) {
+  if (perform_checks) {
+    checkmate::assert_integerish(generation_interval_length, lower = 1, any.missing = FALSE, len = 1)
+    checkmate::assert_integerish(seed_days, lower = 1, upper = generation_interval_length - 1, any.missing = FALSE, len = 1)
+    checkmate::assert_integerish(length(epidemic_curve), lower = generation_interval_length, any.missing = FALSE, len = 1)
+    checkmate::assert_number(k, lower = 0)
+    checkmate::assert_true(k != 0)
+    checkmate::assert_logical(ahead)
+  }
+  if (is.infinite(k)) k <- 0 # this is a hack to persuade stan to behave
   standata <- list(
     D = length(epidemic_curve), D_seed = seed_days,
     y = epidemic_curve,
@@ -54,11 +73,13 @@ homo_hist_Rt_stan <- function(
     mean_omega = generation_interval_mean, sd_omega = generation_interval_sd,
     delta = bin_width,
     mean_log_r = r_prior_mean, sd_log_r = r_prior_sd,
+    k = k,
+    M = as.numeric(ahead),
     y_ahead = next_day_cases, mu_ahead = next_day_import_rate,
     c = c
   )
   out <- rstan::sampling(
-    stanmodels$homo_hist_Rt, data = standata,
+    stanmodels$hist_Rt, data = standata,
     ...
     )
   return(out)

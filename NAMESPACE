@@ -2,8 +2,8 @@
 
 export(convert_gamma_moments)
 export(convert_inverse_gamma_moments)
+export(fit_Rt_hist)
 export(fit_Rt_lgp)
-export(homo_hist_Rt_stan)
 export(initialise_lgp_Rt)
 import(Rcpp)
 import(methods)
