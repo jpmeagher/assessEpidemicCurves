@@ -33,10 +33,10 @@
 fit_Rt_lgp <- function(
   epidemic_curve, seed_days,
   import_rate,
-  generation_interval_mean = 5, generation_interval_sd = 2.5,
-  generation_interval_length = 21,
+  generation_interval_mean, generation_interval_sd,
+  generation_interval_length,
   gp_amplitude = 1, gp_length_scale = 10,
-  k = 0.1,
+  k = 1,
   ahead = FALSE,
   next_day_cases = 1, next_day_import_rate = 1,
   nugget = 1e-6, c = 1,
@@ -50,7 +50,7 @@ fit_Rt_lgp <- function(
     checkmate::assert_true(k != 0)
     checkmate::assert_logical(ahead)
   }
-  if (is.infinite(k)) k <- 0 # this is a hack to persuade stan to behave
+  if (is.infinite(k)) k <- 0 # this hack allows heterogeneous and homogeneous models within a single Stan program
   standata <- list(
     D = length(epidemic_curve), D_seed = seed_days,
     y = epidemic_curve,

@@ -16,8 +16,11 @@ LazyData: true
 RoxygenNote: 7.1.1
 Imports: 
     checkmate,
+    dplyr,
     ggplot2,
+    lubridate,
     magrittr,
+    matrixStats,
     methods,
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.1),

@@ -34,7 +34,7 @@ devtools::install_github("jpmeagher/assessEpidemicCurves")
 
 ## Case Study: COVID-19 in the Republic of Ireland
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning=FALSE}
 library(assessEpidemicCurves)
 library(rstan)
 library(loo)
@@ -177,13 +177,17 @@ R_inf <- rstan::extract(M_inf, "R") %>%
   data.frame(date = df$date, R_inf = .) %>% 
   reshape2::melt(id = "date") 
 
+
+
 R <- rbind(
   cbind(R_0.1, model = "0.1"),
   cbind(R_inf, model = "inf")
 ) 
 
+last_day <-dmy(20012021)
 y_scalar <- 2.5
 R %>%
+  dplyr::filter(date <= last_day) %>% 
   ggplot() +
   geom_bar(
     data = df,
@@ -202,8 +206,9 @@ R %>%
   geom_line(
     data = data.frame(
       date = df$date[6:D], R = wt$R$`Mean(R)`
-    ),
-    aes(x = date, y = R), lwd = 1.5
+    ) %>% 
+      dplyr::filter(date <= last_day),
+    aes(x = date, y = R), lwd = 1
   ) +
   labs(
     title = "Fitted reproduction numbers",
@@ -226,3 +231,5 @@ loo_compare(loo_0.1, loo_inf) %>%
 ```
 
 This model comparison supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that superspreading is a feature of the COVID-19 epidemic in the Republic of Ireland. This suggests that estimates for \(\boldsymbol R\) offered by \(\mathcal M_{0.1}\) provide a more appropriate quantification of uncertainty and should be preferred to those of \(\mathcal M_{\infty}\).
+
+

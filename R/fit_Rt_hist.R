@@ -46,13 +46,13 @@
 fit_Rt_hist <- function(
   epidemic_curve, seed_days,
   import_rate,
-  generation_interval_mean = 5, generation_interval_sd = 2.5,
-  generation_interval_length = 21,
+  generation_interval_mean, generation_interval_sd,
+  generation_interval_length,
   bin_width = 7,
   r_prior_mean = 0, r_prior_sd = 1,
-  k = 0.1,
+  k = 1,
   ahead = FALSE,
-  next_day_cases, next_day_import_rate,
+  next_day_cases = 1, next_day_import_rate = 1,
   c = 1,
   perform_checks = TRUE,
   ...) {

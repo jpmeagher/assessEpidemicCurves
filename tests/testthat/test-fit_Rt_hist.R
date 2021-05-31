@@ -6,6 +6,9 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
   fit <- fit_Rt_hist(
     epidemic_curve = df$count, seed_days = 5,
     import_rate = rep(1, D),
+    generation_interval_mean = 5,
+    generation_interval_sd = 2.5,
+    generation_interval_length = 21,
     ahead = TRUE,
     next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
     next_day_import_rate = 1
@@ -24,7 +27,10 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
   expect_error(
     fit_Rt_hist(
       epidemic_curve = df$count, seed_days = 21,
-      import_rate = rep(1, D), generation_interval_length = 21,
+      import_rate = rep(1, D),
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
+      generation_interval_length = 21,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1
     )
@@ -33,6 +39,8 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
   expect_error(
     fit_Rt_hist(
       epidemic_curve = df$count, seed_days = 5,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
       import_rate = rep(1, D), generation_interval_length = D+1,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1
@@ -66,6 +74,9 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
   fit <- fit_Rt_hist(
     epidemic_curve = df$count, seed_days = 5,
     import_rate = rep(1, D),
+    generation_interval_mean = 5,
+    generation_interval_sd = 2.5,
+    generation_interval_length = 21,
     ahead = FALSE,
     next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
     next_day_import_rate = 1
@@ -108,6 +119,9 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
   fit <- fit_Rt_hist(
     epidemic_curve = df$count, seed_days = 5,
     import_rate = rep(1, D),
+    generation_interval_mean = 5,
+    generation_interval_sd = 2.5,
+    generation_interval_length = 21,
     k = Inf,
     ahead = FALSE,
     next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
@@ -128,6 +142,9 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
     fit_Rt_hist(
       epidemic_curve = df$count, seed_days = 5,
       import_rate = rep(1, D), k = -1,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
+      generation_interval_length = 21,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1,
       iter = 1000
@@ -138,6 +155,9 @@ test_that("Histogram estimator for Rt with homogeneous reproduction fits to data
     fit_Rt_hist(
       epidemic_curve = df$count, seed_days = 5,
       import_rate = rep(1, D), k = 0,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
+      generation_interval_length = 21,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1,
       iter = 1000

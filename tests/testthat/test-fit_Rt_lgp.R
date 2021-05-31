@@ -6,6 +6,9 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
   fit <- fit_Rt_lgp(
     epidemic_curve = df$count, seed_days = 5,
     import_rate = rep(1, D),
+    generation_interval_mean = 5,
+    generation_interval_sd = 2.5,
+    generation_interval_length = 21,
     ahead = TRUE,
     next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
     next_day_import_rate = 1,
@@ -23,6 +26,9 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
     fit_Rt_lgp(
       epidemic_curve = df$count, seed_days = 21,
       import_rate = rep(1, D), generation_interval_length = 21,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
+      generation_interval_length = 21,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1
     )
@@ -32,6 +38,8 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
     fit_Rt_lgp(
       epidemic_curve = df$count, seed_days = 5,
       import_rate = rep(1, D), generation_interval_length = D+1,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1
     )
@@ -64,6 +72,9 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
   fit <- fit_Rt_lgp(
     epidemic_curve = df$count, seed_days = 5,
     import_rate = rep(1, D),
+    generation_interval_mean = 5,
+    generation_interval_sd = 2.5,
+    generation_interval_length = 21,
     iter = 1000
   )
 
@@ -101,6 +112,9 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
   fit <- fit_Rt_lgp(
     epidemic_curve = df$count, seed_days = 5,
     import_rate = rep(1, D), k = Inf,
+    generation_interval_mean = 5,
+    generation_interval_sd = 2.5,
+    generation_interval_length = 21,
     iter = 1000
   )
 
@@ -140,6 +154,9 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
       import_rate = rep(1, D), k = -1,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
+      generation_interval_length = 21,
       iter = 1000
     )
   )
@@ -148,6 +165,9 @@ test_that("log-Gaussian process Rt with heterogeneous reproduction fits to data"
     fit_Rt_lgp(
       epidemic_curve = df$count, seed_days = 5,
       import_rate = rep(1, D), k = 0,
+      generation_interval_mean = 5,
+      generation_interval_sd = 2.5,
+      generation_interval_length = 21,
       next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
       next_day_import_rate = 1,
       iter = 1000

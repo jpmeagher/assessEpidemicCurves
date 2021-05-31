@@ -36,8 +36,6 @@ library(dplyr)
 library(magrittr)
 library(lubridate)
 library(EpiEstim)
-#> Warning in .recacheSubclasses(def@className, def, env): undefined subclass
-#> "numericVector" of class "Mnumeric"; definition not updated
 library(knitr)
 ```
 
@@ -267,13 +265,17 @@ R_inf <- rstan::extract(M_inf, "R") %>%
   data.frame(date = df$date, R_inf = .) %>% 
   reshape2::melt(id = "date") 
 
+
+
 R <- rbind(
   cbind(R_0.1, model = "0.1"),
   cbind(R_inf, model = "inf")
 ) 
 
+last_day <-dmy(20012021)
 y_scalar <- 2.5
 R %>%
+  dplyr::filter(date <= last_day) %>% 
   ggplot() +
   geom_bar(
     data = df,
@@ -292,8 +294,9 @@ R %>%
   geom_line(
     data = data.frame(
       date = df$date[6:D], R = wt$R$`Mean(R)`
-    ),
-    aes(x = date, y = R), lwd = 1.5
+    ) %>% 
+      dplyr::filter(date <= last_day),
+    aes(x = date, y = R), lwd = 1
   ) +
   labs(
     title = "Fitted reproduction numbers",
@@ -325,8 +328,8 @@ loo_compare(loo_0.1, loo_inf) %>%
 
 |        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
 |:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
-| model1 |       0.00 |     0.00 |   -266.07 |          3.61 |   6.42 |       1.17 | 532.14 |      7.22 |
-| model2 |     -16.09 |     5.78 |   -282.16 |          8.41 |   8.88 |       2.10 | 564.31 |     16.81 |
+| model1 |       0.00 |     0.00 |   -265.86 |          3.60 |   6.22 |       1.11 | 531.72 |      7.20 |
+| model2 |     -16.31 |     5.95 |   -282.17 |          8.52 |   8.36 |       1.90 | 564.34 |     17.04 |
 
 PSIS-LOO model selection favours
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
