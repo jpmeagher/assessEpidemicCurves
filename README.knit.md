@@ -6,14 +6,7 @@ output:
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
+
 
 # assessEpidemicCurves
 
@@ -34,7 +27,8 @@ devtools::install_github("jpmeagher/assessEpidemicCurves")
 
 ## Case Study: COVID-19 in the Republic of Ireland
 
-```{r, message = FALSE, warning=FALSE}
+
+```r
 library(assessEpidemicCurves)
 library(rstan)
 library(loo)
@@ -54,20 +48,7 @@ As a case study we include the epidemic curve of confirmed COVID-19 cases in the
 Cases are ordered by epidemiological date.
 This is either the date of onset of symptoms, date of diagnosis, laboratory specimen collection date, laboratory received date, laboratory reported date or the notification date.
 
-```{r raw_epidemic_curve, echo = FALSE, fig.height=3.5, fig.width=7}
-ggplot(covid_incidence_roi_epidemiological_date) +
-  geom_bar(
-    aes(x = date, y =  count), stat = "identity",
-    alpha = 0.5
-  ) +
-  theme_classic() +
-  labs(
-    title = "COVID-19 in the Republic of Ireland",
-    x = "Epidimiological Date",
-    y = "Reported Cases",
-    color = NULL
-  )
-```
+<img src="man/figures/README-raw_epidemic_curve-1.png" width="100%" />
 
 ## The generative model for epidemic curves
 
@@ -113,7 +94,8 @@ We assume that \(\mu_t = 1\) for all \(t\) and that \(\boldsymbol \omega\) is pr
 
 We smooth over day-of-the-week effects in the epidemic curve by taking \(y_t\) to be the 7-day moving average of reported cases on day \(t\).
 
-```{r}
+
+```r
 first_day <- dmy(05122020)
 last_day <- dmy(31012021)
 df <- covid_incidence_roi_epidemiological_date %>% 
@@ -167,7 +149,8 @@ wt <- wallinga_teunis(
 
 Having fit these models to the epidemic curve we can explore the fitted posterior for \(\boldsymbol R\). Note that heterogeneous disease reproduction results in greater uncertainty on estimates for \(R_t\) on each day. We include Wallinga & Teunis' estimate for \(\boldsymbol R\), implemented in the `EpiEstem` package, for comparison. All three estimates are in broad agreement. Estimates for \(R_t\) on the final ten days of the period are omitted as these index cases remain infectious and so their reproduction number depends on secondary infections that may or may not occur in the future.
 
-```{r time_varying_reproduction, fig.height=3.5, fig.width=7}
+
+```r
 R_0.1 <- rstan::extract(M_0.1, "R") %>% 
   as.data.frame() %>% 
   colMeans()
@@ -235,6 +218,8 @@ data.frame(
   ) 
 ```
 
+<img src="man/figures/README-time_varying_reproduction-1.png" width="100%" />
+
 ## Model comparison
 
 We adopt a Leave-Future-Out (LFO) Cross-Validation (CV) approach to model comparison, estimating the posterior predictive density for \(y_{t+1}\) under \(\mathcal M_k\) is
@@ -260,7 +245,8 @@ such that we only fit to \(L + 1\) observations up to time \(t\) to obtain the e
 
 For illustrative purposes, we present LFO-CV for the 15 days from 10-24 December, 2020 with \(L = 21\) and \(N_0 = 5\). This comparison requires a few minutes to complete.
 
-```{r lfo_fitting, eval = FALSE}
+
+```r
 n_samples <- 4000
 N0 <- 5
 L <- 21 # lead in days to prediction
@@ -306,7 +292,8 @@ for (j in seq_along(candidate_k)) {
 }
 ```
 
-```{r compute_elpd_statistics, eval = FALSE}
+
+```r
 pointwise_elpd <- sapply(
   log_lik, 
   function(x) colLogSumExps(x) - log(n_samples)
@@ -324,21 +311,13 @@ se_diff_elpd <- sweep(pointwise_elpd, 1, pointwise_elpd[, best_fit]) %>%
   apply(2, function(x) sqrt(length(x) * var(x)))
 ```
 
-```{r, echo = FALSE}
-table <- cbind(
-  elpd = c(-80.40, -82.19), 
-  se_elpd = c(3.06, 3.54), 
-  elpd_diff = c(0.00, -1.80), 
-  se_elpd_diff = c(0.00, 2.29)
-  )
-rownames(table) <- c("model1", "model2")
 
-knitr::kable(
-  table, 
-  digits = 2,
-  caption = "LFO model comparison of $\\mathcal M_{0.1}$ (model1) and $\\mathcal M_{\\infty}$ (model2)."
-  )
-```
+Table: LFO model comparison of $\mathcal M_{0.1}$ (model1) and $\mathcal M_{\infty}$ (model2).
+
+|       |   elpd| se_elpd| elpd_diff| se_elpd_diff|
+|:------|------:|-------:|---------:|------------:|
+|model1 | -80.40|    3.06|       0.0|         0.00|
+|model2 | -82.19|    3.54|      -1.8|         2.29|
 
 Model comparison for the validation period supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that heterogeneity is a feature of the COVID-19 epidemic in the Republic of Ireland. This suggests that estimates for \(\boldsymbol R\) by \(\mathcal M_{0.1}\) provide more appropriate uncertainty quantification and should be preferred to those of \(\mathcal M_{\infty}\).
 
@@ -346,14 +325,24 @@ Model comparison for the validation period supports \(\mathcal M_{0.1}\) over \(
 
 Pareteo-smoothed importance sampling (PSIS) for approximate leave-one-out cross-validation (LOO-CV) provides an easy to implement measure of model fit. Although time series data are not exchangeable and violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an efficient, easy to implement approach to model comparison. Applying this technique to \(\mathcal M_{0.1}\) and \(\mathcal M_\infty\) fit to COVID-19 cases from December 10, 2020, to January 31 2020, we find that all Pareto-\(k\) diagnostic values are less than 0.7, indicating that both models fit the data well.
 
-```{r,}
+
+```r
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
 loo_inf <- loo(M_inf, moment_match = TRUE)
+#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
 
 loo_compare(loo_0.1, loo_inf) %>% 
   kable(digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
-  
 ```
+
+
+
+Table: PSIS-LOO model comparison favours $\mathcal M_{0.1}$ (model1) over $\mathcal M_{\infty}$ (model2).
+
+|       | elpd_diff| se_diff| elpd_loo| se_elpd_loo| p_loo| se_p_loo|  looic| se_looic|
+|:------|---------:|-------:|--------:|-----------:|-----:|--------:|------:|--------:|
+|model1 |       0.0|    0.00|  -265.70|        3.58|  6.14|     1.07| 531.41|     7.16|
+|model2 |     -16.5|    6.01|  -282.21|        8.53|  8.98|     2.22| 564.42|    17.07|
 
 As before, this model comparison supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), although it will over-estimate the 1-SAP accuracy.
 
@@ -377,7 +366,8 @@ B = \left\lceil \frac{N+1}{\delta} \right\rceil.
 
 Assuming that \(\delta = 7\) and \(k \to \infty\), this model fits the epidemic curve from April 01, 2020 to February 14, 2021 in seconds.
 
-```{r}
+
+```r
 first_day <- dmy(01042020)
 last_day <- dmy(14022021)
 df <- covid_incidence_roi_epidemiological_date %>% 
@@ -395,58 +385,9 @@ H_inf <- fit_Rt_hist(
   cores = 4, refresh = 500,
   control = list(max_treedepth = 15)
 )
-
 ```
 
-```{r histogram_estimator, fig.height=3.5, fig.width=7, echo = FALSE}
-R_inf <- rstan::extract(H_inf, "R") %>% 
-  as.data.frame() %>% 
-  colMeans() 
-ci_inf <- rstan::extract(H_inf, "R") %>% 
-  as.data.frame() %>% 
-  hdi()
-
-y_scalar <- ci_inf[, -(1:5)] %>% 
-  max()
-
-data.frame(
-  date = df$date,
-  b = R_inf
-  ) %>%
-  filter(date <= last_day -10) %>% 
-  filter(date >= first_day + 5) %>% 
-  reshape2::melt(id.vars = "date") %>%
-  ggplot() +
-  theme_classic(base_size = 10) +
-  theme(legend.position = "none") +
-  geom_bar(
-    data = df,
-    aes(x = date, y =  y_scalar * ma_count / max(ma_count)), stat = "identity",
-    alpha = 0.5
-  ) +
-  geom_ribbon(
-    data = data.frame(
-      date = df$date, hdi = t(ci_inf), model =  "b"
-      ) %>% 
-      filter(date <= last_day - 10) %>% 
-      filter(date >= first_day + 5),
-    aes(x = date, ymin = hdi.lower, ymax = hdi.upper, fill = model),
-    alpha= 0.25
-  ) +
-  geom_line(aes(x = date, y = value, color = variable)) +
-  scale_color_viridis_d() +
-  scale_fill_viridis_d() +
-  geom_hline(yintercept = 1, lty = 3) +
-  scale_y_continuous(
-    TeX("Reproduction Number $(R_t)$"),
-    sec.axis = sec_axis(~ . * max(df$ma_count) / y_scalar, name = TeX("7 Day Moving Average Incidence $(Y_t)$"))
-  ) +
-  labs(
-    x = "Epidemiological Date",
-    color = NULL,
-    fill = NULL
-  ) 
-```
+<img src="man/figures/README-histogram_estimator-1.png" width="100%" />
 
 The LFO framework for model comparison can also be applied to this model to objectively tune the bin width \(\delta\). The model also accommodates heterogeneous disease reproduction given some fixed value for \(k\).
 

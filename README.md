@@ -50,7 +50,7 @@ of onset of symptoms, date of diagnosis, laboratory specimen collection
 date, laboratory received date, laboratory reported date or the
 notification date.
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-raw_epidemic_curve-1.png" width="100%" />
 
 ## The generative model for epidemic curves
 
@@ -299,7 +299,10 @@ data.frame(
   geom_ribbon(
     data = data.frame(
       date = df$date[6:(D-1)], 
-      hdi = cbind(lower = wt$R$`Quantile.0.025(R)`, upper = wt$R$`Quantile.0.975(R)`), model =  "wt"
+      hdi = cbind(
+        lower = wt$R$`Quantile.0.025(R)`, 
+        upper = wt$R$`Quantile.0.975(R)`), 
+      model =  "wt"
       ) %>% 
       rbind(data.frame(date = df$date, hdi = t(ci_0.1), model =  "a")) %>% 
       rbind(data.frame(date = df$date, hdi = t(ci_inf), model =  "b")) %>% 
@@ -314,7 +317,10 @@ data.frame(
   geom_hline(yintercept = 1, lty = 3) +
   scale_y_continuous(
     TeX("Reproduction Number $(R_t)$"),
-    sec.axis = sec_axis(~ . * max(df$ma_count) / y_scalar, name = TeX("7 Day Moving Average Incidence $(Y_t)$"))
+    sec.axis = sec_axis(
+      ~ . * max(df$ma_count) / y_scalar, 
+      name = TeX("7 Day Moving Average Incidence $(Y_t)$")
+      )
   ) +
   labs(
     x = "Epidemiological Date",
@@ -323,7 +329,7 @@ data.frame(
   ) 
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-time_varying_reproduction-1.png" width="100%" />
 
 ## Model comparison
 
@@ -495,7 +501,7 @@ preferred to those of
 Pareteo-smoothed importance sampling (PSIS) for approximate
 leave-one-out cross-validation (LOO-CV) provides an easy to implement
 measure of model fit. Although time series data are not exchangeable and
-violate the assumptions underpinning LOO-CV, PSIS LOO\_CV offers an
+violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an
 efficient, easy to implement approach to model comparison. Applying this
 technique to
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
@@ -508,7 +514,6 @@ data well.
 
 ``` r
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
-#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
 loo_inf <- loo(M_inf, moment_match = TRUE)
 #> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
 
@@ -518,8 +523,8 @@ loo_compare(loo_0.1, loo_inf) %>%
 
 |        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
 |:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
-| model1 |       0.00 |     0.00 |   -265.87 |          3.62 |   6.24 |       1.13 | 531.75 |      7.23 |
-| model2 |     -16.61 |     5.91 |   -282.49 |          8.52 |   9.28 |       2.22 | 564.97 |     17.04 |
+| model1 |        0.0 |     0.00 |   -265.70 |          3.58 |   6.14 |       1.07 | 531.41 |      7.16 |
+| model2 |      -16.5 |     6.01 |   -282.21 |          8.53 |   8.98 |       2.22 | 564.42 |     17.07 |
 
 PSIS-LOO model comparison favours
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
@@ -605,7 +610,7 @@ H_inf <- fit_Rt_hist(
 )
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-histogram_estimator-1.png" width="100%" />
 
 The LFO framework for model comparison can also be applied to this model
 to objectively tune the bin width
