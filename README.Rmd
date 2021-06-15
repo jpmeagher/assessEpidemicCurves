@@ -237,7 +237,7 @@ data.frame(
 
 ## Model comparison
 
-We adopt a Leave-Future-Out (LFO) Cross-Validation (CV) approach to model comparison, estimating the posterior predictive density for \(y_{t+1}\) under \(\mathcal M_k\) is
+We adopt a Leave-Future-Out (LFO) Cross-Validation (CV) approach to model comparison, estimating the posterior predictive density for \(y_{t+1}\) under \(\mathcal M_k\) 
 $$
     p \left( y_{t+1} \mid \boldsymbol y_{0:t}, \mathcal M_k \right) = \int p \left( y_{t+1} \mid \boldsymbol \theta_{0:t}, \boldsymbol y_{0:t}, \mathcal M_k \right) p \left( \boldsymbol \theta_{0:t} \mid \boldsymbol y_{0:t}, \mathcal M_k \right) d \boldsymbol \theta_{0:t},
 $$
@@ -340,18 +340,21 @@ knitr::kable(
   )
 ```
 
-Model comparison for the validation period supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that heterogeneity is a feature of the COVID-19 epidemic in the Republic of Ireland. This suggests that estimates for \(\boldsymbol R\) by \(\mathcal M_{0.1}\) provide more appropriate uncertainty quantification and should be preferred to those of \(\mathcal M_{\infty}\).
+Model comparison for the validation period provides some support for \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that heterogeneity is a feature of the COVID-19 epidemic in the Republic of Ireland. This suggests that estimates for \(\boldsymbol R\) by \(\mathcal M_{0.1}\) provide more appropriate uncertainty quantification and should be preferred to those of \(\mathcal M_{\infty}\).
 
 ## Alternative model comparison
 
 Pareteo-smoothed importance sampling (PSIS) for approximate leave-one-out cross-validation (LOO-CV) provides an easy to implement measure of model fit. Although time series data are not exchangeable and violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an efficient, easy to implement approach to model comparison. Applying this technique to \(\mathcal M_{0.1}\) and \(\mathcal M_\infty\) fit to COVID-19 cases from December 10, 2020, to January 31 2020, we find that all Pareto-\(k\) diagnostic values are less than 0.7, indicating that both models fit the data well.
 
-```{r,}
+```{r}
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
 loo_inf <- loo(M_inf, moment_match = TRUE)
+```
 
+```{r, eval = FALSE}
 loo_compare(loo_0.1, loo_inf) %>% 
-  kable(digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
+  kable(
+    digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
   
 ```
 
@@ -362,7 +365,7 @@ As before, this model comparison supports \(\mathcal M_{0.1}\) over \(\mathcal M
 The package also includes a simpler prior for \(\boldsymbol R\) which fits data more efficiently. The histogram estimator for \(\boldsymbol R\) is defined by
 $$
 \begin{aligned}
-    R_t &= \sum_{k = 1}^B r_k \mathbb 1 \left\{ t \in I_k \right\}, \\
+    R_t &= \sum_{k = 1}^B r_k \mathbf 1 \left\{ t \in I_k \right\}, \\
     \log r_k  &\sim \mathcal N \left( 0, 1\right),
 \end{aligned}
 $$
@@ -392,8 +395,7 @@ H_inf <- fit_Rt_hist(
   generation_interval_length = 21,
   bin_width = 7,
   k = Inf,
-  cores = 4, refresh = 500,
-  control = list(max_treedepth = 15)
+  cores = 4, refresh = 500
 )
 
 ```

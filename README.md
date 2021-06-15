@@ -338,7 +338,6 @@ model comparison, estimating the posterior predictive density for
 ![y\_{t+1}](https://latex.codecogs.com/png.latex?y_%7Bt%2B1%7D "y_{t+1}")
 under
 ![\\mathcal M\_k](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_k "\mathcal M_k")
-is
 
 ![
     p \\left( y\_{t+1} \\mid \\boldsymbol y\_{0:t}, \\mathcal M\_k \\right) = \\int p \\left( y\_{t+1} \\mid \\boldsymbol \\theta\_{0:t}, \\boldsymbol y\_{0:t}, \\mathcal M\_k \\right) p \\left( \\boldsymbol \\theta\_{0:t} \\mid \\boldsymbol y\_{0:t}, \\mathcal M\_k \\right) d \\boldsymbol \\theta\_{0:t},
@@ -483,7 +482,7 @@ LFO model comparison of
 ![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
 (model2).
 
-Model comparison for the validation period supports
+Model comparison for the validation period provides some support for
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
 over
 ![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty"),
@@ -514,23 +513,17 @@ data well.
 
 ``` r
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
+#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
 loo_inf <- loo(M_inf, moment_match = TRUE)
 #> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
-
-loo_compare(loo_0.1, loo_inf) %>% 
-  kable(digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
 ```
 
-|        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
-|:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
-| model1 |        0.0 |     0.00 |   -265.70 |          3.58 |   6.14 |       1.07 | 531.41 |      7.16 |
-| model2 |      -16.5 |     6.01 |   -282.21 |          8.53 |   8.98 |       2.22 | 564.42 |     17.07 |
-
-PSIS-LOO model comparison favours
-![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
-(model1) over
-![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
-(model2).
+``` r
+loo_compare(loo_0.1, loo_inf) %>% 
+  kable(
+    digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
+  
+```
 
 As before, this model comparison supports
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
@@ -548,12 +541,12 @@ is defined by
 
 ![
 \\begin{aligned}
-    R\_t &= \\sum\_{k = 1}^B r\_k \\mathbb 1 \\left\\{ t \\in I\_k \\right\\}, \\\\
+    R\_t &= \\sum\_{k = 1}^B r\_k \\mathbf 1 \\left\\{ t \\in I\_k \\right\\}, \\\\
     \\log r\_k  &\\sim \\mathcal N \\left( 0, 1\\right),
 \\end{aligned}
-](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%20%20%20%20R_t%20%26%3D%20%5Csum_%7Bk%20%3D%201%7D%5EB%20r_k%20%5Cmathbb%201%20%5Cleft%5C%7B%20t%20%5Cin%20I_k%20%5Cright%5C%7D%2C%20%5C%5C%0A%20%20%20%20%5Clog%20r_k%20%20%26%5Csim%20%5Cmathcal%20N%20%5Cleft%28%200%2C%201%5Cright%29%2C%0A%5Cend%7Baligned%7D%0A "
+](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%20%20%20%20R_t%20%26%3D%20%5Csum_%7Bk%20%3D%201%7D%5EB%20r_k%20%5Cmathbf%201%20%5Cleft%5C%7B%20t%20%5Cin%20I_k%20%5Cright%5C%7D%2C%20%5C%5C%0A%20%20%20%20%5Clog%20r_k%20%20%26%5Csim%20%5Cmathcal%20N%20%5Cleft%28%200%2C%201%5Cright%29%2C%0A%5Cend%7Baligned%7D%0A "
 \begin{aligned}
-    R_t &= \sum_{k = 1}^B r_k \mathbb 1 \left\{ t \in I_k \right\}, \\
+    R_t &= \sum_{k = 1}^B r_k \mathbf 1 \left\{ t \in I_k \right\}, \\
     \log r_k  &\sim \mathcal N \left( 0, 1\right),
 \end{aligned}
 ")
@@ -605,8 +598,7 @@ H_inf <- fit_Rt_hist(
   generation_interval_length = 21,
   bin_width = 7,
   k = Inf,
-  cores = 4, refresh = 500,
-  control = list(max_treedepth = 15)
+  cores = 4, refresh = 500
 )
 ```
 
