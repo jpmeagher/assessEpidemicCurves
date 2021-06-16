@@ -501,8 +501,7 @@ Pareteo-smoothed importance sampling (PSIS) for approximate
 leave-one-out cross-validation (LOO-CV) provides an easy to implement
 measure of model fit. Although time series data are not exchangeable and
 violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an
-efficient, easy to implement approach to model comparison. Applying this
-technique to
+efficient approach to model comparison. Applying this technique to
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
 and
 ![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty")
@@ -518,12 +517,16 @@ loo_inf <- loo(M_inf, moment_match = TRUE)
 #> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
 ```
 
-``` r
-loo_compare(loo_0.1, loo_inf) %>% 
-  kable(
-    digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
-  
-```
+|        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
+|:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
+| model1 |       0.00 |      0.0 |   -265.93 |          3.61 |   6.27 |       1.14 | 531.86 |      7.21 |
+| model2 |     -16.07 |      5.8 |   -282.00 |          8.42 |   8.69 |       2.04 | 564.01 |     16.85 |
+
+PSIS-LOO model comparison favours
+![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
+(model1) over
+![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
+(model2).
 
 As before, this model comparison supports
 ![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")

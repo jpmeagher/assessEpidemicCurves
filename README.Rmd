@@ -344,14 +344,14 @@ Model comparison for the validation period provides some support for \(\mathcal 
 
 ## Alternative model comparison
 
-Pareteo-smoothed importance sampling (PSIS) for approximate leave-one-out cross-validation (LOO-CV) provides an easy to implement measure of model fit. Although time series data are not exchangeable and violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an efficient, easy to implement approach to model comparison. Applying this technique to \(\mathcal M_{0.1}\) and \(\mathcal M_\infty\) fit to COVID-19 cases from December 10, 2020, to January 31 2020, we find that all Pareto-\(k\) diagnostic values are less than 0.7, indicating that both models fit the data well.
+Pareteo-smoothed importance sampling (PSIS) for approximate leave-one-out cross-validation (LOO-CV) provides an easy to implement measure of model fit. Although time series data are not exchangeable and violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an efficient approach to model comparison. Applying this technique to \(\mathcal M_{0.1}\) and \(\mathcal M_\infty\) fit to COVID-19 cases from December 10, 2020, to January 31 2020, we find that all Pareto-\(k\) diagnostic values are less than 0.7, indicating that both models fit the data well.
 
 ```{r}
 loo_0.1 <- loo(M_0.1, moment_match = TRUE)
 loo_inf <- loo(M_inf, moment_match = TRUE)
 ```
 
-```{r, eval = FALSE}
+```{r, echo=FALSE}
 loo_compare(loo_0.1, loo_inf) %>% 
   kable(
     digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
