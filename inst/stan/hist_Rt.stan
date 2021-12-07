@@ -82,13 +82,18 @@ transformed parameters{
 }
 model{
   if (k > 0) {
-    y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    eta ~ gamma(y_reg * k, k ./ R);
+    target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    target += gamma_lpdf(eta  | y_reg * k, k ./ R );
+    // eta ~ gamma(y_reg * k, k ./ R);
     target += sum(log_eta); // jacobian correction
-    r ~ lognormal(mean_log_r, sd_log_r); // reproduction number prior
+    target +=lognormal_lpdf(r | mean_log_r, sd_log_r); // reproduction number prior
+    // r ~ lognormal(mean_log_r, sd_log_r); // reproduction number prior
   } else {
-    y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood omitting seed days
-    r ~ lognormal(mean_log_r, sd_log_r); // reproduction number prior
+    target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood omitting seed days
+    target +=lognormal_lpdf(r | mean_log_r, sd_log_r); // reproduction number prior
+    // r ~ lognormal(mean_log_r, sd_log_r); // reproduction number prior
   }
 }
 generated quantities{

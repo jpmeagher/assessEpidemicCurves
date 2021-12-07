@@ -87,13 +87,18 @@ transformed parameters{
 }
 model{
   if (k > 0) {
-    y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    eta ~ gamma(y_reg * k, k ./ R);
+    target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    target += gamma_lpdf(eta  | y_reg * k, k ./ R );
+    // eta ~ gamma(y_reg * k, k ./ R);
     target += sum(log_eta); // jacobian correction
-    epsilon ~ std_normal(); // GP random variates
+    target += std_normal_lpdf(epsilon); // GP random variates
+    // epsilon ~ std_normal(); // GP random variates
   } else {
-    y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    epsilon ~ std_normal(); // GP random variates
+    target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
+    target += std_normal_lpdf(epsilon); // GP random variates
+    // epsilon ~ std_normal(); // GP random variates
   }
 }
 generated quantities{
