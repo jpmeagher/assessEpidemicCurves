@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_hist_Rt");
-    reader.add_event(113, 111, "end", "model_hist_Rt");
+    reader.add_event(118, 116, "end", "model_hist_Rt");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -488,18 +488,18 @@ public:
             current_statement_begin__ = 84;
             if (as_bool(logical_gt(k, 0))) {
                 current_statement_begin__ = 85;
-                lp_accum__.add(poisson_log<propto__>(stan::model::rvalue(y, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "y"), add(stan::model::rvalue(mu, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "mu"), stan::model::rvalue(psi, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "psi"))));
-                current_statement_begin__ = 86;
-                lp_accum__.add(gamma_log<propto__>(eta, multiply(y_reg, k), elt_divide(k, R)));
+                lp_accum__.add(poisson_log(stan::model::rvalue(y, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "y"), add(stan::model::rvalue(mu, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "mu"), stan::model::rvalue(psi, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "psi"))));
                 current_statement_begin__ = 87;
+                lp_accum__.add(gamma_log(eta, multiply(y_reg, k), elt_divide(k, R)));
+                current_statement_begin__ = 89;
                 lp_accum__.add(sum(log_eta));
-                current_statement_begin__ = 88;
-                lp_accum__.add(lognormal_log<propto__>(r, mean_log_r, sd_log_r));
-            } else {
                 current_statement_begin__ = 90;
-                lp_accum__.add(poisson_log<propto__>(stan::model::rvalue(y, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "y"), add(stan::model::rvalue(mu, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "mu"), stan::model::rvalue(psi, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "psi"))));
-                current_statement_begin__ = 91;
-                lp_accum__.add(lognormal_log<propto__>(r, mean_log_r, sd_log_r));
+                lp_accum__.add(lognormal_log(r, mean_log_r, sd_log_r));
+            } else {
+                current_statement_begin__ = 93;
+                lp_accum__.add(poisson_log(stan::model::rvalue(y, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "y"), add(stan::model::rvalue(mu, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "mu"), stan::model::rvalue(psi, stan::model::cons_list(stan::model::index_min_max((D_seed + 1), D), stan::model::nil_index_list()), "psi"))));
+                current_statement_begin__ = 95;
+                lp_accum__.add(lognormal_log(r, mean_log_r, sd_log_r));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -683,68 +683,68 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 95;
+            current_statement_begin__ = 100;
             validate_non_negative_index("log_lik", "(D - D_seed)", (D - D_seed));
             Eigen::Matrix<double, Eigen::Dynamic, 1> log_lik((D - D_seed));
             stan::math::initialize(log_lik, DUMMY_VAR__);
             stan::math::fill(log_lik, DUMMY_VAR__);
-            current_statement_begin__ = 96;
+            current_statement_begin__ = 101;
             validate_non_negative_index("psi_ahead", "M", M);
             std::vector<double> psi_ahead(M, double(0));
             stan::math::initialize(psi_ahead, DUMMY_VAR__);
             stan::math::fill(psi_ahead, DUMMY_VAR__);
-            current_statement_begin__ = 97;
+            current_statement_begin__ = 102;
             validate_non_negative_index("log_lik_ahead", "M", M);
             std::vector<double> log_lik_ahead(M, double(0));
             stan::math::initialize(log_lik_ahead, DUMMY_VAR__);
             stan::math::fill(log_lik_ahead, DUMMY_VAR__);
-            current_statement_begin__ = 98;
+            current_statement_begin__ = 103;
             validate_non_negative_index("y_rep_ahead", "M", M);
             std::vector<double> y_rep_ahead(M, double(0));
             stan::math::initialize(y_rep_ahead, DUMMY_VAR__);
             stan::math::fill(y_rep_ahead, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 100;
+            current_statement_begin__ = 105;
             for (int i = (D_seed + 1); i <= D; ++i) {
-                current_statement_begin__ = 101;
+                current_statement_begin__ = 106;
                 stan::model::assign(log_lik, 
                             stan::model::cons_list(stan::model::index_uni((i - D_seed)), stan::model::nil_index_list()), 
                             poisson_log(get_base1(y, i, "y", 1), (get_base1(mu, i, "mu", 1) + get_base1(psi, i, "psi", 1))), 
                             "assigning variable log_lik");
             }
-            current_statement_begin__ = 104;
+            current_statement_begin__ = 109;
             if (as_bool(logical_eq(M, 1))) {
-                current_statement_begin__ = 105;
+                current_statement_begin__ = 110;
                 stan::model::assign(psi_ahead, 
                             stan::model::cons_list(stan::model::index_uni(M), stan::model::nil_index_list()), 
                             0, 
                             "assigning variable psi_ahead");
-                current_statement_begin__ = 106;
+                current_statement_begin__ = 111;
                 for (int i = 1; i <= S; ++i) {
-                    current_statement_begin__ = 106;
+                    current_statement_begin__ = 111;
                     stan::model::assign(psi_ahead, 
                                 stan::model::cons_list(stan::model::index_uni(M), stan::model::nil_index_list()), 
                                 (get_base1(psi_ahead, M, "psi_ahead", 1) + (get_base1(eta, ((D - i) + 1), "eta", 1) * get_base1(omega, i, "omega", 1))), 
                                 "assigning variable psi_ahead");
                 }
-                current_statement_begin__ = 107;
+                current_statement_begin__ = 112;
                 stan::model::assign(log_lik_ahead, 
                             stan::model::cons_list(stan::model::index_uni(M), stan::model::nil_index_list()), 
                             poisson_log(y_ahead, (mu_ahead + get_base1(psi_ahead, M, "psi_ahead", 1))), 
                             "assigning variable log_lik_ahead");
-                current_statement_begin__ = 108;
+                current_statement_begin__ = 113;
                 stan::model::assign(y_rep_ahead, 
                             stan::model::cons_list(stan::model::index_uni(M), stan::model::nil_index_list()), 
                             poisson_rng((mu_ahead + get_base1(psi_ahead, M, "psi_ahead", 1)), base_rng__), 
                             "assigning variable y_rep_ahead");
             }
             // validate, write generated quantities
-            current_statement_begin__ = 95;
+            current_statement_begin__ = 100;
             size_t log_lik_j_1_max__ = (D - D_seed);
             for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
                 vars__.push_back(log_lik(j_1__));
             }
-            current_statement_begin__ = 96;
+            current_statement_begin__ = 101;
             size_t psi_ahead_i_0_max__ = M;
             for (size_t i_0__ = 0; i_0__ < psi_ahead_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "psi_ahead[i_0__]", psi_ahead[i_0__], 0);
@@ -753,12 +753,12 @@ public:
             for (size_t k_0__ = 0; k_0__ < psi_ahead_k_0_max__; ++k_0__) {
                 vars__.push_back(psi_ahead[k_0__]);
             }
-            current_statement_begin__ = 97;
+            current_statement_begin__ = 102;
             size_t log_lik_ahead_k_0_max__ = M;
             for (size_t k_0__ = 0; k_0__ < log_lik_ahead_k_0_max__; ++k_0__) {
                 vars__.push_back(log_lik_ahead[k_0__]);
             }
-            current_statement_begin__ = 98;
+            current_statement_begin__ = 103;
             size_t y_rep_ahead_i_0_max__ = M;
             for (size_t i_0__ = 0; i_0__ < y_rep_ahead_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "y_rep_ahead[i_0__]", y_rep_ahead[i_0__], 0);

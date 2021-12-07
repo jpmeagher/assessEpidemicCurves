@@ -89,9 +89,10 @@ model{
   if (k > 0) {
     target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
     // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    target += gamma_lpdf(eta  | y_reg * k, k ./ R );
+    target += gamma_lpdf( exp(log_eta)  | y_reg * k, k ./ R ) + sum(log_eta);
+    // target += gamma_lpdf(eta  | y_reg * k, k ./ R );
     // eta ~ gamma(y_reg * k, k ./ R);
-    target += sum(log_eta); // jacobian correction
+    // target += sum(log_eta); // jacobian correction
     target += std_normal_lpdf(epsilon); // GP random variates
     // epsilon ~ std_normal(); // GP random variates
   } else {
