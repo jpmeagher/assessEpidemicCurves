@@ -26,3 +26,29 @@ test_that("log-Gaussian process initialisation", {
     len = 4
   )
 })
+
+test_that("Momentum initialisation", {
+
+  checkmate::expect_numeric(
+    initialise_momentum(
+      epidemic_curve = covid_incidence_roi_epidemiological_date$count,k = 1
+    )$log_eta,
+    any.missing = FALSE, len = nrow(covid_incidence_roi_epidemiological_date)
+  )
+
+  checkmate::expect_list(
+    initialise_momentum(
+      epidemic_curve = covid_incidence_roi_epidemiological_date$count, k = 1
+    ),
+    len = 1, names = "named"
+  )
+
+  checkmate::expect_list(
+    lapply(
+      1:4, function(i) {
+        initialise_momentum(
+          epidemic_curve = covid_incidence_roi_epidemiological_date$count, k = 0.1)
+      }),
+    len = 4
+  )
+})

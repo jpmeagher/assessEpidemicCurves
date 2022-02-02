@@ -42,7 +42,7 @@
 sa_validation <- function(
   epidemic_curve, seed_days,
   import_rate,
-  generation_interval_mean, generation_interval_sd,
+  expected_generation_interval_mean, generation_interval_sd,
   generation_interval_length,
   next_day_cases = NA, next_day_import_rate = NA,
   perform_checks = TRUE,
@@ -52,7 +52,7 @@ sa_validation <- function(
   fit <- fit_fun(
     epidemic_curve = epidemic_curve,
     seed_days = seed_days, import_rate = import_rate,
-    generation_interval_mean = generation_interval_mean,
+    expected_generation_interval_mean = expected_generation_interval_mean,
     generation_interval_sd = generation_interval_sd,
     generation_interval_length = generation_interval_length,
     ahead = TRUE,

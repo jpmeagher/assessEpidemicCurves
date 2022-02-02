@@ -8,18 +8,24 @@ fit_Rt_hist(
   epidemic_curve,
   seed_days,
   import_rate,
-  generation_interval_mean,
+  expected_generation_interval_mean,
+  generation_interval_mean_sd = 0,
   generation_interval_sd,
   generation_interval_length,
   bin_width = 7,
-  r_prior_mean = 0,
-  r_prior_sd = 1,
-  k = 1,
+  log_Rt_prior_mean = 0,
+  log_Rt_prior_sd = 1,
+  expected_k = 1,
+  log_k_prior_sd = 0,
   ahead = FALSE,
   next_day_cases = 1,
   next_day_import_rate = 1,
   c = 1,
+  nugget = 1e-06,
   perform_checks = TRUE,
+  pars = c("R", "k", "gi_mean", "y_rep_ahead", "log_lik_ahead"),
+  init = function() ifelse(!is.infinite(expected_k), initialise_momentum(epidemic_curve
+    = epidemic_curve, k = expected_k), list()),
   ...
 )
 }
@@ -33,8 +39,14 @@ epidemic}
 \item{import_rate}{A vector of integers. The same length as epidemic_curve.
 The rate at which cases are imported from outwith the population.}
 
-\item{generation_interval_mean}{A scalar. The mean of generation intervals
-between infector-infectee pairs.}
+\item{expected_generation_interval_mean}{A scalar. The mean of generation
+intervals between infector-infectee pairs.}
+
+\item{generation_interval_mean_sd}{A scalar. The standard deviation of the
+mean generation interval between infector-infectee pairs. When set to 0,
+assumes that the mean generation interval is a known parameter of the
+model. Care should be taken when allowing for an unknown generation
+interval as the sampling algorithm can become unstable.}
 
 \item{generation_interval_sd}{A scalar. The standard deviation of  generation
 intervals between infector-infectee pairs.}
@@ -45,13 +57,19 @@ interval.}
 \item{bin_width}{An integer scalar. The bin width defining the histogram
 estimator for time-varying reproduction numbers.}
 
-\item{r_prior_mean}{A scalar. The mean for a log-normal distribution.}
+\item{log_Rt_prior_mean}{A scalar. The mean for a log-normal distribution.}
 
-\item{r_prior_sd}{A positive scalar. The standard deviation for a log-normal
-distribution.}
+\item{log_Rt_prior_sd}{A positive scalar. The standard deviation for a
+log-normal distribution.}
 
-\item{k}{A positive scalar. The case dispersion parameter. Setting to Inf
-allows for homogeneous disease reproduction.}
+\item{expected_k}{A positive scalar. The expected case dispersion parameter.
+Setting to Inf allows for homogeneous disease reproduction.}
+
+\item{log_k_prior_sd}{A non-negative scalar. The standard deviation of a
+log-normal prior on  the case dispersion parameter. The model treats k as a
+fixed hyper-parameter when this variable is set to 0. Care should be taken
+when allowing for an unknown dispersion parameter as the sampling algorithm
+can become unstable.}
 
 \item{ahead}{Logical. Include a 1 step ahead prediction.}
 
@@ -60,10 +78,18 @@ model validation.}
 
 \item{next_day_import_rate}{A positice scalar. Import rate for the day ahead.}
 
-\item{c}{A small positive integer A regularising constant.}
+\item{c}{A small positive integer. A regularising constant.}
+
+\item{nugget}{A small positive scalar. A regularising constant.}
 
 \item{perform_checks}{Logical. Should function arguments be checked to ensure
 they satisfy any constraints.}
+
+\item{pars}{A character vector. Specifies the parameters returned by the
+underlying Stan program.}
+
+\item{init}{Initial values for the sampling scheme. See `rstan::stan` for
+details.}
 
 \item{...}{Arguments passed to `rstan::sampling` (e.g. iter, chains).}
 }

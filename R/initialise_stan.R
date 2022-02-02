@@ -21,3 +21,26 @@ initialise_lgp_Rt <- function(
     log_eta = log(stats::rgamma(D, shape = epidemic_curve * k, rate = k / R))
     )
 }
+
+#' Initialise Momentum.
+#'
+#' Initialise the momentum in the sampling scheme for heterogeneous disease
+#' reproduction assuming a reproduction number of 1.
+#'
+#'
+#' @inheritParams fit_Rt_lgp
+#' @param seed A scalar. The random seed.
+#'
+#' @return A real valued vector. Log disease momentum for each day.
+#'
+#' @export
+initialise_momentum <- function(
+  epidemic_curve, k,
+  seed = NULL
+){
+  set.seed(seed)
+  D <- length(epidemic_curve)
+  list(
+    log_eta = log(stats::rgamma(D, shape = epidemic_curve * k, rate = k))
+  )
+}

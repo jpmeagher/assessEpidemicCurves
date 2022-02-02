@@ -3,118 +3,196 @@
 // Gaussian process prior for R
 //
 data{
-  int<lower=1> D_seed; // number of days to seed
-  int<lower=2> D; // number of days
-  int<lower=0> y[D]; // daily count
-  real x[D]; // days observed
-  vector<lower=0>[D] mu; // proposed daily import rate
+  int<lower=1> N0; // number of days to seed
+  int<lower=2> N; // number of days
+  int<lower=0> y[N]; // daily count
+  real x[N]; // days observed
+  vector<lower=0>[N] mu; // proposed daily import rate
   int<lower=1> S; // max generation interval length
-  real<lower=0> mean_omega; // generation interval mean
-  real<lower=0> sd_omega; // generation interval standard deviation
-  real<lower=0> alpha; // GP prior amplitude
-  real<lower=0> ell; // GP prior length scale
-  real<lower=0> k; // case dispersion parameter
+  real<lower=0> expected_generation_interval_mean; // generation interval mean
+  real<lower=0> generation_interval_mean_sd; // uncertainty in generation interval mean
+  real<lower=0> generation_interval_sd; // generation interval standard deviation
+  real<lower=0> sigma; // GP prior amplitude
+  real<lower=0> expected_ls; // GP prior length scale
+  real<lower=0> ls_prior_sd; // case dispersion parameter uncertainty
+  real<lower=0> expected_k_inv; // case dispersion parameter
+  real<lower=0> log_k_prior_sd; // case dispersion parameter uncertainty
   int<lower=0, upper=1> M; // step ahead prediction
   int<lower=0> y_ahead; // forward observations
   real<lower=0> mu_ahead; // forward daily import rate
-  real<lower=0> nugget; // gp regularising constant
+  real<lower=0> nugget; // non-zero regularising constant
   int<lower=0> c; // case count regularising constant
 }
 transformed data{
-  vector<lower=0>[D] y_reg; // regularised counts
-  cov_matrix[D] C; // f correlation
-  matrix[D, D] L; // cholesky factorisation
+  vector<lower=0>[N] y_reg; // regularised counts
+  cov_matrix[N] fixed_C; // f correlation
+  matrix[N, N] fixed_L; // cholesky factorisation
+  real<lower=0> fixed_a; // generation interval shape
+  real<lower=0> fixed_b; // generation interval rate
+  simplex[S] fixed_omega; // generation interval pmf
+  vector<upper=0>[S] log_fixed_omega; // generation interval pmf
+  int<lower=0> N_eta; // Momentum days
+  int<lower=0, upper=1> uncertain_omega; // Is there uncertainty on omega?
+  int<lower=0, upper=1> uncertain_ls; // Is there uncertainty on ls?
+  int<lower=0, upper=1> uncertain_k; // Is there uncertainty on k?
+  //  regularise low counts
+  for (i in 1:N) {
+    y_reg[i] = max(y[i], c);
+  }
+  // define GP prior correlation
+  fixed_C = cov_exp_quad(x, 1, expected_ls);
+  for (i in 1:N) fixed_C[i, i] = fixed_C[i, i] + nugget;
+  fixed_L = cholesky_decompose(fixed_C);
+  // set generation interval
+  fixed_b = expected_generation_interval_mean / (generation_interval_sd^2);
+  fixed_a = expected_generation_interval_mean * fixed_b;
+  fixed_omega[1] = gamma_cdf(1.5, fixed_a, fixed_b);
+  for (i in 2:S) fixed_omega[i] = gamma_cdf(i+0.5, fixed_a, fixed_b) - gamma_cdf(i-0.5, fixed_a, fixed_b);
+  fixed_omega = fixed_omega / sum(fixed_omega);
+  log_fixed_omega = log(fixed_omega);
+  // Allow for homogeneous case
+  if (expected_k_inv == 0) {
+    N_eta = 0;
+  } else {
+    N_eta = N;
+  }
+  // Allow for uncertian omega
+  if (generation_interval_mean_sd == 0) {
+    uncertain_omega = 0;
+  } else {
+    uncertain_omega = 1;
+  }
+  // Allow for prior on ls
+  if (ls_prior_sd == 0) {
+    uncertain_ls = 0;
+  } else {
+    uncertain_ls = 1;
+  }
+  // Allow for prior on k
+  if (log_k_prior_sd == 0) {
+    uncertain_k = 0;
+  } else {
+    uncertain_k = 1;
+  }
+}
+parameters{
+  vector[N_eta] log_eta; // total daily reproductive rate
+  vector[N] epsilon; // underlying Gaussian random variables
+  real z_omega[uncertain_omega]; // omega random variable
+  real z_ls[uncertain_ls]; // dispersion parameter random variable
+  real z_k[uncertain_k]; // dispersion parameter random variable
+}
+transformed parameters{
+  real<lower=0> gi_mean[uncertain_omega]; // random generation interval mean
   real<lower=0> a; // generation interval shape
   real<lower=0> b; // generation interval rate
   simplex[S] omega; // generation interval pmf
   vector<upper=0>[S] log_omega; // generation interval pmf
-  int<lower=0> D_eta; // Momentum days
-  //  regularise low counts
-  for (i in 1:D) {
-    y_reg[i] = max(y[i], c);
-  }
-  // Define Brownian prior correlation
-  C = cov_exp_quad(x, 1, ell);
-  for (i in 1:D) C[i, i] = C[i, i] + nugget;
-  L = cholesky_decompose(C);
+  cov_matrix[N] C; // f correlation
+  matrix[N, N] L; // cholesky factorisation
+  real<lower=0> ls[uncertain_ls]; // random length-scale
+  vector[N] f; // time-dependent log reproductive numbers
+  vector<lower=0>[N] R; // time-dependent reproductive numbers
+  vector<lower=0>[N] eta; // disease momentum
+  matrix[N, S] tmp_psi_matrix; // temporary matrix
+  vector<lower=0>[N] psi; // local infection rate
+  real<lower=0> k[uncertain_k]; // reported dispersion parameter
+  real<lower= 0> kk; // within-algorithm dispersion parameter
   // set generation interval
-  b = mean_omega / (sd_omega^2);
-  a = mean_omega * b;
-  omega[1] = gamma_cdf(1.5, a, b);
-  for (i in 2:S) omega[i] = gamma_cdf(i+0.5, a, b) - gamma_cdf(i-0.5, a, b);
-  omega = omega / sum(omega);
-  log_omega = log(omega);
-  // Allow for homogeneous case
-  if (k == 0) {
-    D_eta = 0;
+  if (uncertain_omega == 1) {
+    gi_mean[1] = expected_generation_interval_mean + generation_interval_mean_sd * z_omega[1];
+    b = gi_mean[1] / (generation_interval_sd^2);
+    a = gi_mean[1] * b;
+    omega[1] = gamma_cdf(1.5, a, b);
+    for (i in 2:S) omega[i] = gamma_cdf(i+0.5, a, b) - gamma_cdf(i-0.5, a, b);
+    omega = omega / sum(omega);
+    log_omega = log(omega);
   } else {
-    D_eta = D;
+    a = fixed_a;
+    b = fixed_b;
+    omega = fixed_omega;
+    log_omega = log_fixed_omega;
   }
-}
-parameters{
-  vector[D_eta] log_eta; // total daily reproductive rate
-  vector[D] epsilon; // underlying Gaussian random variables
-}
-transformed parameters{
-  vector[D] f; // time-dependent log reproductive numbers
-  vector<lower=0>[D] R; // time-dependent reproductive numbers
-  vector<lower=0>[D] eta; // Disease momentum
-  vector<lower=0>[D] psi; // local infection rate
-
+  // length-scale
+  if (uncertain_ls == 1) {
+    ls[1] = expected_ls + (ls_prior_sd * z_ls[1]);
+    C = cov_exp_quad(x, 1, ls[1]);
+    for (i in 1:N) C[i, i] = C[i, i] + nugget;
+    L = cholesky_decompose(C);
+  } else {
+    C = fixed_C;
+    L = fixed_L;
+  }
   // reproduction numbers
-  f = alpha * L * epsilon;
+  f = sigma * L * epsilon;
   R = exp(f);
-  // disease momentum
-  if (k == 0) {
+  // dispersion parameter
+  if (uncertain_k == 1) {
+    k[1] = exp(log(1 / expected_k_inv) + log_k_prior_sd .* z_k[1]);
+    kk = k[1];
+  } else {
+    kk = 1 / expected_k_inv;
+  }
+  // disease momentum & burden of infection
+  tmp_psi_matrix = rep_matrix(negative_infinity(), N, S);
+  tmp_psi_matrix[1, 1] = log(nugget);
+  if (expected_k_inv == 0) {
     eta = R .* y_reg;
+    for (i in 2:N) {
+      if (i <= S) {
+        for (j in 1:(i - 1)) {
+          tmp_psi_matrix[i, j] = log(eta[i-j]) + log_omega[j];
+        }
+      } else {
+        for (j in 1:S) {
+          tmp_psi_matrix[i, j] = log(eta[i-j]) + log_omega[j];
+        }
+      }
+    }
   } else {
     eta = exp(log_eta);
-  }
-  // burden of infection
-  psi = rep_vector(0, D);
-  psi[1] = 0;
-  for (i in 2:D) {
-    if (i <= S) {
-      for (j in 1:(i - 1)) {
-        psi[i] = psi[i] + (eta[i-j] * omega[j]);
-      }
-    } else {
-      for (j in 1:S) {
-        psi[i] = psi[i] + (eta[i-j] * omega[j]);
+    for (i in 2:N) {
+      if (i <= S) {
+        for (j in 1:(i - 1)) {
+          tmp_psi_matrix[i, j] = log_eta[i-j] + log_omega[j];
+        }
+      } else {
+        for (j in 1:S) {
+          tmp_psi_matrix[i, j] = log_eta[i-j] + log_omega[j];
+        }
       }
     }
   }
-}
-model{
-  if (k > 0) {
-    target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    target += gamma_lpdf( exp(log_eta)  | y_reg * k, k ./ R ) + sum(log_eta);
-    // target += gamma_lpdf(eta  | y_reg * k, k ./ R );
-    // eta ~ gamma(y_reg * k, k ./ R);
-    // target += sum(log_eta); // jacobian correction
-    target += std_normal_lpdf(epsilon); // GP random variates
-    // epsilon ~ std_normal(); // GP random variates
-  } else {
-    target += poisson_lpmf(y[(D_seed+1):D] | mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    // y[(D_seed+1):D] ~ poisson(mu[(D_seed+1):D] + psi[(D_seed+1):D]); // likelihood
-    target += std_normal_lpdf(epsilon); // GP random variates
-    // epsilon ~ std_normal(); // GP random variates
+  for(i in 1:N) {
+    psi[i] = exp(log_sum_exp(tmp_psi_matrix[i, ]));
   }
 }
+model{
+  target += poisson_lpmf(y[(N0+1):N] | mu[(N0+1):N] + psi[(N0+1):N]); // likelihood
+  target += std_normal_lpdf(epsilon); // GP random variates
+  if (expected_k_inv != 0) {
+    target += gamma_lpdf(exp(log_eta)  | y_reg * kk, kk ./ R);
+    target += sum(log_eta); // jacobian correction
+      if (uncertain_k == 1) {
+        target += std_normal_lpdf(z_k);
+      }
+  }
+  if (uncertain_ls == 1) target += std_normal_lpdf(z_ls);
+  if (uncertain_omega == 1) target += std_normal_lpdf(z_omega);
+}
 generated quantities{
-  vector[D-D_seed] log_lik; // log likelihood
+  vector[N-N0] log_lik; // log likelihood
   real<lower=0> psi_ahead[M]; // forward burden of infection
   real log_lik_ahead[M]; // forward likelihood
   real<lower=0> y_rep_ahead[M]; // forward cases
   // log likelihood
-  for (i in (D_seed+1):D) {
-    log_lik[i-D_seed] = poisson_lpmf(y[i] | mu[i] + psi[i]);
+  for (i in (N0+1):N) {
+    log_lik[i-N0] = poisson_lpmf(y[i] | mu[i] + psi[i]);
   }
   // 1 step ahead validation
   if (M == 1){
     psi_ahead[M] = 0;
-    for (i in 1:S) psi_ahead[M] = psi_ahead[M] + (eta[D - i + 1] * omega[i]);
+    for (i in 1:S) psi_ahead[M] = psi_ahead[M] + (eta[N - i + 1] * omega[i]);
     log_lik_ahead[M] = poisson_lpmf(y_ahead | mu_ahead + psi_ahead[M]);
     y_rep_ahead[M] = poisson_rng(mu_ahead + psi_ahead[M]);
   }

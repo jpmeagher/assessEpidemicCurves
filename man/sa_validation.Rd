@@ -8,7 +8,7 @@ sa_validation(
   epidemic_curve,
   seed_days,
   import_rate,
-  generation_interval_mean,
+  expected_generation_interval_mean,
   generation_interval_sd,
   generation_interval_length,
   next_day_cases = NA,
@@ -28,8 +28,8 @@ epidemic}
 \item{import_rate}{A vector of integers. The same length as epidemic_curve.
 The rate at which cases are imported from outwith the population.}
 
-\item{generation_interval_mean}{A scalar. The mean of generation intervals
-between infector-infectee pairs.}
+\item{expected_generation_interval_mean}{A scalar. The mean of generation
+intervals between infector-infectee pairs.}
 
 \item{generation_interval_sd}{A scalar. The standard deviation of  generation
 intervals between infector-infectee pairs.}
@@ -45,12 +45,15 @@ model validation.}
 \item{perform_checks}{Logical. Should function arguments be checked to ensure
 they satisfy any constraints.}
 
-\item{fit_fun}{Function call to fit an epidemic model to data. See `fit_Rt_lgp` or `fit_Rt_hist`.}
+\item{fit_fun}{Function call to fit an epidemic model to data. See
+`fit_Rt_lgp` or `fit_Rt_hist`.}
 
-\item{...}{Arguments passed to `fit_fun` including those passed to `rstan::sampling` (e.g. iter, chains).}
+\item{...}{Arguments passed to `fit_fun` including those passed to
+`rstan::sampling` (e.g. iter, chains).}
 }
 \value{
-A list with element `elpd`, the estimated elpd, and `y_rep`, a sampele from the posterior predictive distribution.
+A list with element `elpd`, the estimated elpd, and `y_rep`, a
+  sampele from the posterior predictive distribution.
 }
 \description{
 Compute the 1-step ahead elpd for and sample the posterior predictive
