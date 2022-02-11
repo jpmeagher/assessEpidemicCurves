@@ -27,6 +27,8 @@ Imports:
     rstan (>= 2.18.1),
     rstantools (>= 2.1.1)
 Suggests: 
+    rmarkdown,
+    knitr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
@@ -40,3 +42,4 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
+VignetteBuilder: knitr
