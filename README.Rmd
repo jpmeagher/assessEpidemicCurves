@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![Travis build status](https://travis-ci.com/jpmeagher/assessEpidemicCurves.svg?branch=master)](https://travis-ci.com/jpmeagher/assessEpidemicCurves)
 <!-- badges: end -->
 
-The goal of assessEpidemicCurves is to model epidemic curves under heterogeneous disease reproduction, providing estimates for the time-varying reproduction number and assessing epidemic curves for evidence of superspreading. This package accompanies [Reference our paper here]
+The goal of assessEpidemicCurves is to model epidemic curves under heterogeneous disease reproduction, providing estimates for the time-varying reproduction number and assessing epidemic curves for evidence of superspreading. This package accompanies [Meagher & Friel (2021)](https://arxiv.org/abs/2106.12064)
 
 ## Installation
 
@@ -100,56 +100,68 @@ $$
 \begin{aligned}
 \log R_t &=  f \left( t \right), \\
 f \left( t \right) &\sim \mathcal{GP} \left( 0, k \left(t, t' \right) \right), \\
-k \left(t, t' \right) & = \alpha^2 \exp \left( - \frac{\left(t - t'\right)^2}{2 \ell^2}\right),
+k \left(t, t' \right) & = \sigma_f^2 \exp \left( - \frac{\left(t - t'\right)^2}{2 \ell^2}\right),
 \end{aligned}
 $$
-where amplitude \(\alpha > 0\) and length-scale \(\ell > 0\) are specified a priori.
+where amplitude \(\sigma_f > 0\) and length-scale \(\ell > 0\) are specified a priori.
+
+Alternatively, we can treat either or both of $k$ and $l$ as unknown parameters with prior distributions defined by 
+$$
+\begin{aligned}
+p \left(  \log k \right) &\propto \mathcal N \left( \log k \mid  \mu_{\log k}, \sigma_{\log k}^2 \right), \\
+p \left(  \ell \right) &\propto \mathcal N \left( \ell \mid \mu_{\ell}, \sigma_\ell^2 \right).
+\end{aligned}
+$$
+
+Care should be taken when specifying these prior distributions to ensure that they are sufficiently informative to ensure stability for the sampling scheme. For example $\log k \sim \mathcal N (0, 1)$ and $\ell \sim \mathcal N (17.5, 2.5)$ provide weakly informative priors. Note that full posterior inference over $\ell$ scales with $\mathcal O \left( N^3 \right)$ and so posterior inference for this quantity is particularly expensive.
 
 ## Model fitting
 
-The model described here can be computationally expensive to implement and so we restrict our analysis to a subset of the data. We examine reported COVID-19 cases from December 10, 2020, to January 31 2020, allowing the 5 days from December 5 to December 9 inclusive to seed the epidemic. 
+The model described here can be computationally expensive to implement and so we restrict our analysis to a subset of the data. We examine reported COVID-19 cases from October 6 to November 30 2020, allowing the 5 days from October 1 to October 5 inclusive to seed the epidemic. 
 
-We assume that \(\mu_t = 1\) for all \(t\) and that \(\boldsymbol \omega\) is proportional to a discretised gamma distribution such that generation intervals have a mean of 5 days, standard deviation of 2.5, and a maximum of 21 days. The Gaussian process prior for \(\boldsymbol R\) is specified by \(\alpha = 1\) and \(\ell = 10\). We fit two models, \(\mathcal M_{0.1}\) where \(k = 0.1\) and \(\mathcal M_\infty\) where \(k \to \infty\).
+We assume that \(\mu_t = 1\) for all \(t\) and that \(\boldsymbol \omega\) is proportional to a discretised gamma distribution such that generation intervals have a mean of 5 days, standard deviation of 2.5, and a maximum of 21 days. The Gaussian process prior for \(\boldsymbol R\) is specified by \(\sigma_f = 1\) and \(\ell = 17.5\). 
 
-We smooth over day-of-the-week effects in the epidemic curve by taking \(y_t\) to be the 7-day moving average of reported cases on day \(t\).
+We fit 3 models to the data. $\mathcal M_k$ assumes that $\log k \sim \mathcal N \left( 0, 1^2 \right)$. $\mathcal M_{\infty}$ assumes homogeneous disease reproduction where $k \to \infty$. The third model, $\operatorname{W\&T}$, fits Wallinga \& Teunis' branching process model using the `EpiEstim` package, where we take the 3-day moving average cohort reproductiion number.
+
+We smooth over day-of-the-week effects in the epidemic curve by taking \(y_t\) to be the 7-day moving average of reported cases on day \(t\) and assume that the import rate is 1, where applicable.
 
 ```{r}
-first_day <- dmy(05122020)
-last_day <- dmy(31012021)
+first_day <- dmy(01102020)
+last_day <- dmy(30112020)
 df <- covid_incidence_roi_epidemiological_date %>% 
   mutate(ma_count = stats::filter(count, rep(1/7, 7)) %>% round) %>% 
   filter(date >= first_day & date <= last_day) 
 D <- nrow(df)
-# initialise heterogeneous disease reproduction
+# initialise latent variables that we expect to be far from 0
 init_list <- lapply(
   1:4, function(i) {
-    initialise_lgp_Rt(
-      epidemic_curve = df$ma_count, 
-      gp_amplitude = 1, k = 0.1
+    initialise_momentum(
+      epidemic_curve = df$ma_count
       )
     }
   )
-# fit heterogeneous disease reproduction
-M_0.1 <- fit_Rt_lgp(
+# fit heterogeneous disease reproduction (about 1 minute to fit)
+M_k <- fit_Rt_lgp(
   epidemic_curve = df$ma_count, seed_days = 5,
   import_rate = rep(1, D), 
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
-  gp_amplitude = 1, gp_length_scale = 10,
-  k = 0.1,
-  cores = 4, refresh = 500, 
-  init = init_list
+  gp_amplitude = 1, ls_prior_mean = 17.5,
+  log_k_prior_mean = 0, log_k_prior_sd = 1,
+  cores = 4, refresh = 1000, 
+  init = init_list,
+  control = list(adapt_delta = 0.95, max_treedepth = 15)
 )
-# fit homogeneous disease reproduction
+# fit homogeneous disease reproduction (about 5 minutes to fit)
 M_inf <- fit_Rt_lgp(
   epidemic_curve = df$ma_count, seed_days = 5,
   import_rate = rep(1, D), 
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
-  gp_amplitude = 1, gp_length_scale = 10,
-  k = Inf,
-  cores = 4, refresh = 500,
-  control = list(max_treedepth = 15)
+  gp_amplitude = 1, ls_prior_mean = 17.5,
+  log_k_prior_mean = Inf,
+  cores = 4, refresh = 1000,
+  control = list(adapt_delta = 0.95, max_treedepth = 15)
 )
 
 wt <- wallinga_teunis(
@@ -165,13 +177,24 @@ wt <- wallinga_teunis(
 )
 ```
 
-Having fit these models to the epidemic curve we can explore the fitted posterior for \(\boldsymbol R\). Note that heterogeneous disease reproduction results in greater uncertainty on estimates for \(R_t\) on each day. We include Wallinga & Teunis' estimate for \(\boldsymbol R\), implemented in the `EpiEstem` package, for comparison. All three estimates are in broad agreement. Estimates for \(R_t\) on the final ten days of the period are omitted as these index cases remain infectious and so their reproduction number depends on secondary infections that may or may not occur in the future.
+## Model Assessment
+
+`M_k` and `M_inf` are stanfit objects and so all the standard tests of convergence and diagnostics apply. Similarly we can use the `summary` and `plot` methods included with `rstan`. In particular, we are interested in the posterior for $k$ in $\mathcal M_k$. For the period we consider here, we estimate that $k \approx 0.04 \pm 0.015$.
+
+```{r, message = FALSE}
+summary(M_k, pars = "k")$summary
+plot(M_k, pars = "k")
+```
+
+
+
+Having fit these models to the epidemic curve we can explore the fitted posterior for \(\boldsymbol R\). Note that heterogeneous disease reproduction results in greater uncertainty on estimates for \(R_t\) on each day. All three estimates are in broad agreement. Estimates for \(R_t\) over the final five days of the period are omitted as these estimates are not supported by data.
 
 ```{r time_varying_reproduction, fig.height=3.5, fig.width=7}
-R_0.1 <- rstan::extract(M_0.1, "R") %>% 
+R_k <- rstan::extract(M_k, "R") %>% 
   as.data.frame() %>% 
   colMeans()
-ci_0.1 <- rstan::extract(M_0.1, "R") %>% 
+ci_k <- rstan::extract(M_k, "R") %>% 
   as.data.frame() %>% 
   hdi()
 
@@ -182,16 +205,16 @@ ci_inf <- rstan::extract(M_inf, "R") %>%
   as.data.frame() %>% 
   hdi()
 
-y_scalar <- ci_0.1[, -(1:5)] %>% 
+y_scalar <- ci_k[, -(1:5)] %>% 
   max()
 
 data.frame(
   date = df$date,
-  a = R_0.1,
+  a = R_k,
   b = R_inf,
   wt = c(rep(NA, 5), wt$R$`Mean(R)`, rep(NA, 1))
   ) %>%
-  filter(date <= last_day -10) %>% 
+  filter(date <= last_day - 5) %>% 
   filter(date >= first_day + 5) %>% 
   reshape2::melt(id.vars = "date") %>%
   ggplot() +
@@ -210,16 +233,16 @@ data.frame(
         upper = wt$R$`Quantile.0.975(R)`), 
       model =  "wt"
       ) %>% 
-      rbind(data.frame(date = df$date, hdi = t(ci_0.1), model =  "a")) %>% 
+      rbind(data.frame(date = df$date, hdi = t(ci_k), model =  "a")) %>% 
       rbind(data.frame(date = df$date, hdi = t(ci_inf), model =  "b")) %>% 
-      filter(date <= last_day - 10) %>% 
+      filter(date <= last_day - 5) %>% 
       filter(date >= first_day + 5),
     aes(x = date, ymin = hdi.lower, ymax = hdi.upper, fill = model),
     alpha= 0.25
   ) +
   geom_line(aes(x = date, y = value, color = variable)) +
-  scale_color_viridis_d(labels = c(bquote("M"[0.1]), bquote("M"[infinity]), "W&T")) +
-  scale_fill_viridis_d(labels = c(bquote("M"[0.1]), bquote("M"[infinity]), "W&T")) +
+  scale_color_viridis_d(labels = c(bquote("M"[k]), bquote("M"[infinity]), "W&T")) +
+  scale_fill_viridis_d(labels = c(bquote("M"[k]), bquote("M"[infinity]), "W&T")) +
   geom_hline(yintercept = 1, lty = 3) +
   scale_y_continuous(
     TeX("Reproduction Number $(R_t)$"),
@@ -235,9 +258,23 @@ data.frame(
   ) 
 ```
 
-## Model comparison
+Pareteo-smoothed importance sampling (PSIS) for approximate leave-one-out cross-validation (LOO-CV) provides an easy to implement measure of model fit. Although time series data are not exchangeable and violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an efficient approach to model comparison. Applying this technique to \(\mathcal M_{k}\) and \(\mathcal M_\infty\) we find that $\mathcal M_k$ provises a better fit to the data.
 
-We adopt a Leave-Future-Out (LFO) Cross-Validation (CV) approach to model comparison, estimating the posterior predictive density for \(y_{t+1}\) under \(\mathcal M_k\) 
+```{r}
+loo_k <- loo(M_k)
+loo_inf <- loo(M_inf)
+```
+
+```{r, echo=FALSE}
+loo_compare(loo_k, loo_inf) %>% 
+  kable(
+    digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{k}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
+  
+```
+
+## Leave-Future-Out Cross-Validation
+
+We could adopt a more rigorous Leave-Future-Out (LFO) Cross-Validation (CV) approach to model comparison, estimating the posterior predictive density for \(y_{t+1}\) under \(\mathcal M_k\)
 $$
     p \left( y_{t+1} \mid \boldsymbol y_{0:t}, \mathcal M_k \right) = \int p \left( y_{t+1} \mid \boldsymbol \theta_{0:t}, \boldsymbol y_{0:t}, \mathcal M_k \right) p \left( \boldsymbol \theta_{0:t} \mid \boldsymbol y_{0:t}, \mathcal M_k \right) d \boldsymbol \theta_{0:t},
 $$
@@ -258,7 +295,7 @@ $$
 $$
 such that we only fit to \(L + 1\) observations up to time \(t\) to obtain the estimate (this becomes \(L + N_0\) observations when \(N_0\) days seed the epidemic).
 
-For illustrative purposes, we present LFO-CV for the 15 days from 10-24 December, 2020 with \(L = 21\) and \(N_0 = 5\). This comparison requires a few minutes to complete.
+For illustrative purposes, we present code for LFO-CV for the 15 days from 10-24 December, 2020 with \(L = 21\) and \(N_0 = 5\) where we compare a model where $k = 0.1$ to the case where $k \to \infty$. This comparison requires a few minutes to complete.
 
 ```{r lfo_fitting, eval = FALSE}
 n_samples <- 4000
@@ -288,8 +325,8 @@ for (j in seq_along(candidate_k)) {
       generation_interval_mean = 5,
       generation_interval_sd = 2.5,
       generation_interval_length = 21,
-      gp_amplitude = 1, gp_length_scale = 10,
-      k = candidate_k[j],
+      gp_amplitude = 1, ls_prior_mean = 17.5,
+      log_k_prior_mean = log(candidate_k[j]),
       ahead = TRUE,
       next_day_cases = df$ma_count[df$date == day],
       next_day_import_rate = 1, refresh = 0
@@ -342,24 +379,6 @@ knitr::kable(
 
 Model comparison for the validation period provides some support for \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), indicating that heterogeneity is a feature of the COVID-19 epidemic in the Republic of Ireland. This suggests that estimates for \(\boldsymbol R\) by \(\mathcal M_{0.1}\) provide more appropriate uncertainty quantification and should be preferred to those of \(\mathcal M_{\infty}\).
 
-## Alternative model comparison
-
-Pareteo-smoothed importance sampling (PSIS) for approximate leave-one-out cross-validation (LOO-CV) provides an easy to implement measure of model fit. Although time series data are not exchangeable and violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an efficient approach to model comparison. Applying this technique to \(\mathcal M_{0.1}\) and \(\mathcal M_\infty\) fit to COVID-19 cases from December 10, 2020, to January 31 2020, we find that all Pareto-\(k\) diagnostic values are less than 0.7, indicating that both models fit the data well.
-
-```{r}
-loo_0.1 <- loo(M_0.1, moment_match = TRUE)
-loo_inf <- loo(M_inf, moment_match = TRUE)
-```
-
-```{r, echo=FALSE}
-loo_compare(loo_0.1, loo_inf) %>% 
-  kable(
-    digits = 2, caption = "PSIS-LOO model comparison favours $\\mathcal M_{0.1}$ (model1) over $\\mathcal M_{\\infty}$ (model2).")
-  
-```
-
-As before, this model comparison supports \(\mathcal M_{0.1}\) over \(\mathcal M_\infty\), although it will over-estimate the 1-SAP accuracy.
-
 ## Alternative priors
 
 The package also includes a simpler prior for \(\boldsymbol R\) which fits data more efficiently. The histogram estimator for \(\boldsymbol R\) is defined by
@@ -394,8 +413,8 @@ H_inf <- fit_Rt_hist(
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
   bin_width = 7,
-  k = Inf,
-  cores = 4, refresh = 500
+  log_k_prior_mean = Inf,
+  cores = 4, refresh = 1000
 )
 
 ```

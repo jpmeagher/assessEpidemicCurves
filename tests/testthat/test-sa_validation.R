@@ -19,10 +19,10 @@ test_that("1 step ahead elpd computation", {
   fit <- fit_Rt_hist(
     epidemic_curve = sub_df$ma_count, seed_days = 5,
     import_rate = rep(1, D),
-    expected_generation_interval_mean = 5,
+    generation_interval_mean = 5,
     generation_interval_sd = 2.5,
     generation_interval_length = 21,
-    expected_k = 1,
+    log_k_prior_mean =  0,
     ahead = TRUE,
     next_day_cases = df$ma_count[df$date == validation_day],
     next_day_import_rate = 1,
@@ -32,10 +32,10 @@ test_that("1 step ahead elpd computation", {
   sa <- sa_validation(
     epidemic_curve = sub_df$ma_count, seed_days = 5,
     import_rate = rep(1, D),
-    expected_generation_interval_mean = 5,
+    generation_interval_mean = 5,
     generation_interval_sd = 2.5,
     generation_interval_length = 21,
-    expected_k = 1,
+    log_k_prior_mean = 0,
     fit_fun = fit_Rt_hist,
     next_day_cases = df$ma_count[df$date == validation_day],
     next_day_import_rate = 1,
@@ -93,7 +93,7 @@ test_that("1 step ahead elpd computation", {
   # full_fit <- fit_Rt_hist(
   #   epidemic_curve = full_df$ma_count, seed_days = 5,
   #   import_rate = rep(1, D),
-  #   expected_generation_interval_mean = 5,
+  #   generation_interval_mean = 5,
   #   generation_interval_sd = 2.5,
   #   generation_interval_length = 21,
   #   ahead = FALSE,
@@ -118,7 +118,7 @@ test_that("1 step ahead elpd computation", {
   #   fit_i <- fit_Rt_hist(
   #     epidemic_curve = df_i$ma_count, seed_days = 5,
   #     import_rate = rep(1, L),
-  #     expected_generation_interval_mean = 5,
+  #     generation_interval_mean = 5,
   #     generation_interval_sd = 2.5,
   #     generation_interval_length = 21,
   #     ahead = TRUE,

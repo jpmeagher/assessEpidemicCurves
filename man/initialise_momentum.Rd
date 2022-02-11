@@ -4,14 +4,18 @@
 \alias{initialise_momentum}
 \title{Initialise Momentum.}
 \usage{
-initialise_momentum(epidemic_curve, k, seed = NULL)
+initialise_momentum(epidemic_curve, log_R_sd = 0.1, k = 0.1, seed = NULL)
 }
 \arguments{
 \item{epidemic_curve}{A vector of integers. The epidemic curve to be
 assessed.}
 
-\item{k}{A positive scalar. The case dispersion parameter. Setting to Inf
-allows for homogeneous disease reproduction.}
+\item{log_R_sd}{A positive scalar. The standard deviation of the zero-mean
+log-normal distribution providing initial time-varying reproduction
+numbers.}
+
+\item{k}{A positive scalar. The value for the dispersion parameter k from
+which initial momentum parameters are sampled.}
 
 \item{seed}{A scalar. The random seed.}
 }

@@ -8,14 +8,13 @@ fit_Rt_hist(
   epidemic_curve,
   seed_days,
   import_rate,
-  expected_generation_interval_mean,
-  generation_interval_mean_sd = 0,
+  generation_interval_mean,
   generation_interval_sd,
   generation_interval_length,
   bin_width = 7,
   log_Rt_prior_mean = 0,
   log_Rt_prior_sd = 1,
-  expected_k = 1,
+  log_k_prior_mean = 0,
   log_k_prior_sd = 0,
   ahead = FALSE,
   next_day_cases = 1,
@@ -23,9 +22,7 @@ fit_Rt_hist(
   c = 1,
   nugget = 1e-06,
   perform_checks = TRUE,
-  pars = c("R", "k", "gi_mean", "y_rep_ahead", "log_lik_ahead"),
-  init = function() ifelse(!is.infinite(expected_k), initialise_momentum(epidemic_curve
-    = epidemic_curve, k = expected_k), list()),
+  pars = c("R", "k", "y_rep", "log_lik", "y_rep_ahead", "log_lik_ahead"),
   ...
 )
 }
@@ -39,14 +36,8 @@ epidemic}
 \item{import_rate}{A vector of integers. The same length as epidemic_curve.
 The rate at which cases are imported from outwith the population.}
 
-\item{expected_generation_interval_mean}{A scalar. The mean of generation
-intervals between infector-infectee pairs.}
-
-\item{generation_interval_mean_sd}{A scalar. The standard deviation of the
-mean generation interval between infector-infectee pairs. When set to 0,
-assumes that the mean generation interval is a known parameter of the
-model. Care should be taken when allowing for an unknown generation
-interval as the sampling algorithm can become unstable.}
+\item{generation_interval_mean}{A scalar. The mean of generation intervals
+between infector-infectee pairs.}
 
 \item{generation_interval_sd}{A scalar. The standard deviation of  generation
 intervals between infector-infectee pairs.}
@@ -62,8 +53,9 @@ estimator for time-varying reproduction numbers.}
 \item{log_Rt_prior_sd}{A positive scalar. The standard deviation for a
 log-normal distribution.}
 
-\item{expected_k}{A positive scalar. The expected case dispersion parameter.
-Setting to Inf allows for homogeneous disease reproduction.}
+\item{log_k_prior_mean}{A real-valued scalar. The prior mean of the log case
+dispersion parameter. Setting to Inf allows for homogeneous disease
+reproduction.}
 
 \item{log_k_prior_sd}{A non-negative scalar. The standard deviation of a
 log-normal prior on  the case dispersion parameter. The model treats k as a
@@ -88,9 +80,6 @@ they satisfy any constraints.}
 \item{pars}{A character vector. Specifies the parameters returned by the
 underlying Stan program.}
 
-\item{init}{Initial values for the sampling scheme. See `rstan::stan` for
-details.}
-
 \item{...}{Arguments passed to `rstan::sampling` (e.g. iter, chains).}
 }
 \value{
@@ -108,7 +97,7 @@ df <- covid_incidence_roi_epidemiological_date[1:D, ]
 #   generation_interval_mean = 5, generation_interval_sd = 2.5,
 #   generation_interval_length = 21,
 #   gp_amplitude = 1, gp_length_scale = 10,
-#   k = 0.1,
+#   log_k_prior_mean = log(1),
 #   ahead = TRUE,
 #   next_day_cases =  covid_incidence_roi_epidemiological_date$count[D+1],
 #   next_day_import_rate = 1, iter = 1000

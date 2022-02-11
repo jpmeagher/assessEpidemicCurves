@@ -4,7 +4,14 @@
 \alias{initialise_lgp_Rt}
 \title{Initialise sampling scheme.}
 \usage{
-initialise_lgp_Rt(epidemic_curve, gp_amplitude, k, seed = NULL)
+initialise_lgp_Rt(
+  epidemic_curve,
+  gp_amplitude = 0.1,
+  k = 0.1,
+  uncertain_k = FALSE,
+  uncertain_length_scale = FALSE,
+  seed = NULL
+)
 }
 \arguments{
 \item{epidemic_curve}{A vector of integers. The epidemic curve to be
@@ -13,8 +20,13 @@ assessed.}
 \item{gp_amplitude}{A positive scalar. The amplitude hyper-parameter for the
 underlying Gaussian process.}
 
-\item{k}{A positive scalar. The case dispersion parameter. Setting to Inf
-allows for homogeneous disease reproduction.}
+\item{k}{A positive scalar. A value for the dispersion parameter k that
+allows the momentum parameters to be initialised.}
+
+\item{uncertain_k}{Logical. Is k treated as a random quantity in this model.}
+
+\item{uncertain_length_scale}{Logical. Is the Gaussian process length_-cale treated as
+a random quantity in this model.}
 
 \item{seed}{A scalar. The random seed.}
 }

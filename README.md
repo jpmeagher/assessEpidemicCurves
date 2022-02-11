@@ -12,8 +12,8 @@ status](https://travis-ci.com/jpmeagher/assessEpidemicCurves.svg?branch=master)]
 The goal of assessEpidemicCurves is to model epidemic curves under
 heterogeneous disease reproduction, providing estimates for the
 time-varying reproduction number and assessing epidemic curves for
-evidence of superspreading. This package accompanies \[Reference our
-paper here\]
+evidence of superspreading. This package accompanies [Meagher & Friel
+(2021)](https://arxiv.org/abs/2106.12064)
 
 ## Installation
 
@@ -144,29 +144,57 @@ such that
 \\begin{aligned}
 \\log R\_t &=  f \\left( t \\right), \\\\
 f \\left( t \\right) &\\sim \\mathcal{GP} \\left( 0, k \\left(t, t' \\right) \\right), \\\\
-k \\left(t, t' \\right) & = \\alpha^2 \\exp \\left( - \\frac{\\left(t - t'\\right)^2}{2 \\ell^2}\\right),
+k \\left(t, t' \\right) & = \\sigma\_f^2 \\exp \\left( - \\frac{\\left(t - t'\\right)^2}{2 \\ell^2}\\right),
 \\end{aligned}
-](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%5Clog%20R_t%20%26%3D%20%20f%20%5Cleft%28%20t%20%5Cright%29%2C%20%5C%5C%0Af%20%5Cleft%28%20t%20%5Cright%29%20%26%5Csim%20%5Cmathcal%7BGP%7D%20%5Cleft%28%200%2C%20k%20%5Cleft%28t%2C%20t%27%20%5Cright%29%20%5Cright%29%2C%20%5C%5C%0Ak%20%5Cleft%28t%2C%20t%27%20%5Cright%29%20%26%20%3D%20%5Calpha%5E2%20%5Cexp%20%5Cleft%28%20-%20%5Cfrac%7B%5Cleft%28t%20-%20t%27%5Cright%29%5E2%7D%7B2%20%5Cell%5E2%7D%5Cright%29%2C%0A%5Cend%7Baligned%7D%0A "
+](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%5Clog%20R_t%20%26%3D%20%20f%20%5Cleft%28%20t%20%5Cright%29%2C%20%5C%5C%0Af%20%5Cleft%28%20t%20%5Cright%29%20%26%5Csim%20%5Cmathcal%7BGP%7D%20%5Cleft%28%200%2C%20k%20%5Cleft%28t%2C%20t%27%20%5Cright%29%20%5Cright%29%2C%20%5C%5C%0Ak%20%5Cleft%28t%2C%20t%27%20%5Cright%29%20%26%20%3D%20%5Csigma_f%5E2%20%5Cexp%20%5Cleft%28%20-%20%5Cfrac%7B%5Cleft%28t%20-%20t%27%5Cright%29%5E2%7D%7B2%20%5Cell%5E2%7D%5Cright%29%2C%0A%5Cend%7Baligned%7D%0A "
 \begin{aligned}
 \log R_t &=  f \left( t \right), \\
 f \left( t \right) &\sim \mathcal{GP} \left( 0, k \left(t, t' \right) \right), \\
-k \left(t, t' \right) & = \alpha^2 \exp \left( - \frac{\left(t - t'\right)^2}{2 \ell^2}\right),
+k \left(t, t' \right) & = \sigma_f^2 \exp \left( - \frac{\left(t - t'\right)^2}{2 \ell^2}\right),
 \end{aligned}
 ")
 
 where amplitude
-![\\alpha &gt; 0](https://latex.codecogs.com/png.latex?%5Calpha%20%3E%200 "\alpha > 0")
+![\\sigma\_f &gt; 0](https://latex.codecogs.com/png.latex?%5Csigma_f%20%3E%200 "\sigma_f > 0")
 and length-scale
 ![\\ell &gt; 0](https://latex.codecogs.com/png.latex?%5Cell%20%3E%200 "\ell > 0")
 are specified a priori.
+
+Alternatively, we can treat either or both of
+![k](https://latex.codecogs.com/png.latex?k "k") and
+![l](https://latex.codecogs.com/png.latex?l "l") as unknown parameters
+with prior distributions defined by
+
+![
+\\begin{aligned}
+p \\left(  \\log k \\right) &\\propto \\mathcal N \\left( \\log k \\mid  \\mu\_{\\log k}, \\sigma\_{\\log k}^2 \\right), \\\\
+p \\left(  \\ell \\right) &\\propto \\mathcal N \\left( \\ell \\mid \\mu\_{\\ell}, \\sigma\_\\ell^2 \\right).
+\\end{aligned}
+](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0Ap%20%5Cleft%28%20%20%5Clog%20k%20%5Cright%29%20%26%5Cpropto%20%5Cmathcal%20N%20%5Cleft%28%20%5Clog%20k%20%5Cmid%20%20%5Cmu_%7B%5Clog%20k%7D%2C%20%5Csigma_%7B%5Clog%20k%7D%5E2%20%5Cright%29%2C%20%5C%5C%0Ap%20%5Cleft%28%20%20%5Cell%20%5Cright%29%20%26%5Cpropto%20%5Cmathcal%20N%20%5Cleft%28%20%5Cell%20%5Cmid%20%5Cmu_%7B%5Cell%7D%2C%20%5Csigma_%5Cell%5E2%20%5Cright%29.%0A%5Cend%7Baligned%7D%0A "
+\begin{aligned}
+p \left(  \log k \right) &\propto \mathcal N \left( \log k \mid  \mu_{\log k}, \sigma_{\log k}^2 \right), \\
+p \left(  \ell \right) &\propto \mathcal N \left( \ell \mid \mu_{\ell}, \sigma_\ell^2 \right).
+\end{aligned}
+")
+
+Care should be taken when specifying these prior distributions to ensure
+that they are sufficiently informative to ensure stability for the
+sampling scheme. For example
+![\\log k \\sim \\mathcal N (0, 1)](https://latex.codecogs.com/png.latex?%5Clog%20k%20%5Csim%20%5Cmathcal%20N%20%280%2C%201%29 "\log k \sim \mathcal N (0, 1)")
+and
+![\\ell \\sim \\mathcal N (17.5, 2.5)](https://latex.codecogs.com/png.latex?%5Cell%20%5Csim%20%5Cmathcal%20N%20%2817.5%2C%202.5%29 "\ell \sim \mathcal N (17.5, 2.5)")
+provide weakly informative priors. Note that full posterior inference
+over ![\\ell](https://latex.codecogs.com/png.latex?%5Cell "\ell") scales
+with
+![\\mathcal O \\left( N^3 \\right)](https://latex.codecogs.com/png.latex?%5Cmathcal%20O%20%5Cleft%28%20N%5E3%20%5Cright%29 "\mathcal O \left( N^3 \right)")
+and so posterior inference for this quantity is particularly expensive.
 
 ## Model fitting
 
 The model described here can be computationally expensive to implement
 and so we restrict our analysis to a subset of the data. We examine
-reported COVID-19 cases from December 10, 2020, to January 31 2020,
-allowing the 5 days from December 5 to December 9 inclusive to seed the
-epidemic.
+reported COVID-19 cases from October 6 to November 30 2020, allowing the
+5 days from October 1 to October 5 inclusive to seed the epidemic.
 
 We assume that
 ![\\mu\_t = 1](https://latex.codecogs.com/png.latex?%5Cmu_t%20%3D%201 "\mu_t = 1")
@@ -177,60 +205,66 @@ intervals have a mean of 5 days, standard deviation of 2.5, and a
 maximum of 21 days. The Gaussian process prior for
 ![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R")
 is specified by
-![\\alpha = 1](https://latex.codecogs.com/png.latex?%5Calpha%20%3D%201 "\alpha = 1")
+![\\sigma\_f = 1](https://latex.codecogs.com/png.latex?%5Csigma_f%20%3D%201 "\sigma_f = 1")
 and
-![\\ell = 10](https://latex.codecogs.com/png.latex?%5Cell%20%3D%2010 "\ell = 10").
-We fit two models,
-![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
-where
-![k = 0.1](https://latex.codecogs.com/png.latex?k%20%3D%200.1 "k = 0.1")
-and
-![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty")
-where
+![\\ell = 17.5](https://latex.codecogs.com/png.latex?%5Cell%20%3D%2017.5 "\ell = 17.5").
+
+We fit 3 models to the data.
+![\\mathcal M\_k](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_k "\mathcal M_k")
+assumes that
+![\\log k \\sim \\mathcal N \\left( 0, 1^2 \\right)](https://latex.codecogs.com/png.latex?%5Clog%20k%20%5Csim%20%5Cmathcal%20N%20%5Cleft%28%200%2C%201%5E2%20%5Cright%29 "\log k \sim \mathcal N \left( 0, 1^2 \right)").
+![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
+assumes homogeneous disease reproduction where
 ![k \\to \\infty](https://latex.codecogs.com/png.latex?k%20%5Cto%20%5Cinfty "k \to \infty").
+The third model,
+![\\operatorname{W\\&T}](https://latex.codecogs.com/png.latex?%5Coperatorname%7BW%5C%26T%7D "\operatorname{W\&T}"),
+fits Wallinga & Teunis’ branching process model using the `EpiEstim`
+package, where we take the 3-day moving average cohort reproductiion
+number.
 
 We smooth over day-of-the-week effects in the epidemic curve by taking
 ![y\_t](https://latex.codecogs.com/png.latex?y_t "y_t") to be the 7-day
 moving average of reported cases on day
-![t](https://latex.codecogs.com/png.latex?t "t").
+![t](https://latex.codecogs.com/png.latex?t "t") and assume that the
+import rate is 1, where applicable.
 
 ``` r
-first_day <- dmy(05122020)
-last_day <- dmy(31012021)
+first_day <- dmy(01102020)
+last_day <- dmy(30112020)
 df <- covid_incidence_roi_epidemiological_date %>% 
   mutate(ma_count = stats::filter(count, rep(1/7, 7)) %>% round) %>% 
   filter(date >= first_day & date <= last_day) 
 D <- nrow(df)
-# initialise heterogeneous disease reproduction
+# initialise latent variables that we expect to be far from 0
 init_list <- lapply(
   1:4, function(i) {
-    initialise_lgp_Rt(
-      epidemic_curve = df$ma_count, 
-      gp_amplitude = 1, k = 0.1
+    initialise_momentum(
+      epidemic_curve = df$ma_count
       )
     }
   )
-# fit heterogeneous disease reproduction
-M_0.1 <- fit_Rt_lgp(
+# fit heterogeneous disease reproduction (about 1 minute to fit)
+M_k <- fit_Rt_lgp(
   epidemic_curve = df$ma_count, seed_days = 5,
   import_rate = rep(1, D), 
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
-  gp_amplitude = 1, gp_length_scale = 10,
-  k = 0.1,
-  cores = 4, refresh = 500, 
-  init = init_list
+  gp_amplitude = 1, ls_prior_mean = 17.5,
+  log_k_prior_mean = 0, log_k_prior_sd = 1,
+  cores = 4, refresh = 1000, 
+  init = init_list,
+  control = list(adapt_delta = 0.95, max_treedepth = 15)
 )
-# fit homogeneous disease reproduction
+# fit homogeneous disease reproduction (about 5 minutes to fit)
 M_inf <- fit_Rt_lgp(
   epidemic_curve = df$ma_count, seed_days = 5,
   import_rate = rep(1, D), 
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
-  gp_amplitude = 1, gp_length_scale = 10,
-  k = Inf,
-  cores = 4, refresh = 500,
-  control = list(max_treedepth = 15)
+  gp_amplitude = 1, ls_prior_mean = 17.5,
+  log_k_prior_mean = Inf,
+  cores = 4, refresh = 1000,
+  control = list(adapt_delta = 0.95, max_treedepth = 15)
 )
 
 wt <- wallinga_teunis(
@@ -246,26 +280,44 @@ wt <- wallinga_teunis(
 )
 ```
 
+## Model Assessment
+
+`M_k` and `M_inf` are stanfit objects and so all the standard tests of
+convergence and diagnostics apply. Similarly we can use the `summary`
+and `plot` methods included with `rstan`. In particular, we are
+interested in the posterior for
+![k](https://latex.codecogs.com/png.latex?k "k") in
+![\\mathcal M\_k](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_k "\mathcal M_k").
+For the period we consider here, we estimate that
+![k \\approx 0.04 \\pm 0.015](https://latex.codecogs.com/png.latex?k%20%5Capprox%200.04%20%5Cpm%200.015 "k \approx 0.04 \pm 0.015").
+
+``` r
+summary(M_k, pars = "k")$summary
+#>           mean      se_mean         sd       2.5%        25%        50%
+#> k[1] 0.0417721 0.0005485901 0.01542042 0.01926222 0.03105091 0.03936085
+#>             75%      97.5%    n_eff     Rhat
+#> k[1] 0.04983501 0.07947632 790.1259 1.002067
+plot(M_k, pars = "k")
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
 Having fit these models to the epidemic curve we can explore the fitted
 posterior for
 ![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R").
 Note that heterogeneous disease reproduction results in greater
 uncertainty on estimates for
-![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") on each day. We
-include Wallinga & Teunis’ estimate for
-![\\boldsymbol R](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20R "\boldsymbol R"),
-implemented in the `EpiEstem` package, for comparison. All three
-estimates are in broad agreement. Estimates for
-![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") on the final ten
-days of the period are omitted as these index cases remain infectious
-and so their reproduction number depends on secondary infections that
-may or may not occur in the future.
+![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") on each day. All
+three estimates are in broad agreement. Estimates for
+![R\_t](https://latex.codecogs.com/png.latex?R_t "R_t") over the final
+five days of the period are omitted as these estimates are not supported
+by data.
 
 ``` r
-R_0.1 <- rstan::extract(M_0.1, "R") %>% 
+R_k <- rstan::extract(M_k, "R") %>% 
   as.data.frame() %>% 
   colMeans()
-ci_0.1 <- rstan::extract(M_0.1, "R") %>% 
+ci_k <- rstan::extract(M_k, "R") %>% 
   as.data.frame() %>% 
   hdi()
 
@@ -276,16 +328,16 @@ ci_inf <- rstan::extract(M_inf, "R") %>%
   as.data.frame() %>% 
   hdi()
 
-y_scalar <- ci_0.1[, -(1:5)] %>% 
+y_scalar <- ci_k[, -(1:5)] %>% 
   max()
 
 data.frame(
   date = df$date,
-  a = R_0.1,
+  a = R_k,
   b = R_inf,
   wt = c(rep(NA, 5), wt$R$`Mean(R)`, rep(NA, 1))
   ) %>%
-  filter(date <= last_day -10) %>% 
+  filter(date <= last_day - 5) %>% 
   filter(date >= first_day + 5) %>% 
   reshape2::melt(id.vars = "date") %>%
   ggplot() +
@@ -304,16 +356,16 @@ data.frame(
         upper = wt$R$`Quantile.0.975(R)`), 
       model =  "wt"
       ) %>% 
-      rbind(data.frame(date = df$date, hdi = t(ci_0.1), model =  "a")) %>% 
+      rbind(data.frame(date = df$date, hdi = t(ci_k), model =  "a")) %>% 
       rbind(data.frame(date = df$date, hdi = t(ci_inf), model =  "b")) %>% 
-      filter(date <= last_day - 10) %>% 
+      filter(date <= last_day - 5) %>% 
       filter(date >= first_day + 5),
     aes(x = date, ymin = hdi.lower, ymax = hdi.upper, fill = model),
     alpha= 0.25
   ) +
   geom_line(aes(x = date, y = value, color = variable)) +
-  scale_color_viridis_d(labels = c(bquote("M"[0.1]), bquote("M"[infinity]), "W&T")) +
-  scale_fill_viridis_d(labels = c(bquote("M"[0.1]), bquote("M"[infinity]), "W&T")) +
+  scale_color_viridis_d(labels = c(bquote("M"[k]), bquote("M"[infinity]), "W&T")) +
+  scale_fill_viridis_d(labels = c(bquote("M"[k]), bquote("M"[infinity]), "W&T")) +
   geom_hline(yintercept = 1, lty = 3) +
   scale_y_continuous(
     TeX("Reproduction Number $(R_t)$"),
@@ -331,10 +383,41 @@ data.frame(
 
 <img src="man/figures/README-time_varying_reproduction-1.png" width="100%" />
 
-## Model comparison
+Pareteo-smoothed importance sampling (PSIS) for approximate
+leave-one-out cross-validation (LOO-CV) provides an easy to implement
+measure of model fit. Although time series data are not exchangeable and
+violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an
+efficient approach to model comparison. Applying this technique to
+![\\mathcal M\_{k}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7Bk%7D "\mathcal M_{k}")
+and
+![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty")
+we find that
+![\\mathcal M\_k](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_k "\mathcal M_k")
+provises a better fit to the data.
 
-We adopt a Leave-Future-Out (LFO) Cross-Validation (CV) approach to
-model comparison, estimating the posterior predictive density for
+``` r
+loo_k <- loo(M_k)
+#> Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.
+loo_inf <- loo(M_inf)
+#> Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.
+```
+
+|        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
+|:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
+| model1 |       0.00 |     0.00 |   -243.16 |          3.99 |   6.91 |       2.23 | 486.32 |      7.98 |
+| model2 |     -60.22 |    18.38 |   -303.38 |         21.65 |  19.80 |       8.59 | 606.77 |     43.31 |
+
+PSIS-LOO model comparison favours
+![\\mathcal M\_{k}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7Bk%7D "\mathcal M_{k}")
+(model1) over
+![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
+(model2).
+
+## Leave-Future-Out Cross-Validation
+
+We could adopt a more rigorous Leave-Future-Out (LFO) Cross-Validation
+(CV) approach to model comparison, estimating the posterior predictive
+density for
 ![y\_{t+1}](https://latex.codecogs.com/png.latex?y_%7Bt%2B1%7D "y_{t+1}")
 under
 ![\\mathcal M\_k](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_k "\mathcal M_k")
@@ -400,11 +483,15 @@ observations when
 ![N\_0](https://latex.codecogs.com/png.latex?N_0 "N_0") days seed the
 epidemic).
 
-For illustrative purposes, we present LFO-CV for the 15 days from 10-24
-December, 2020 with
+For illustrative purposes, we present code for LFO-CV for the 15 days
+from 10-24 December, 2020 with
 ![L = 21](https://latex.codecogs.com/png.latex?L%20%3D%2021 "L = 21")
 and
-![N\_0 = 5](https://latex.codecogs.com/png.latex?N_0%20%3D%205 "N_0 = 5").
+![N\_0 = 5](https://latex.codecogs.com/png.latex?N_0%20%3D%205 "N_0 = 5")
+where we compare a model where
+![k = 0.1](https://latex.codecogs.com/png.latex?k%20%3D%200.1 "k = 0.1")
+to the case where
+![k \\to \\infty](https://latex.codecogs.com/png.latex?k%20%5Cto%20%5Cinfty "k \to \infty").
 This comparison requires a few minutes to complete.
 
 ``` r
@@ -435,8 +522,8 @@ for (j in seq_along(candidate_k)) {
       generation_interval_mean = 5,
       generation_interval_sd = 2.5,
       generation_interval_length = 21,
-      gp_amplitude = 1, gp_length_scale = 10,
-      k = candidate_k[j],
+      gp_amplitude = 1, ls_prior_mean = 17.5,
+      log_k_prior_mean = log(candidate_k[j]),
       ahead = TRUE,
       next_day_cases = df$ma_count[df$date == day],
       next_day_import_rate = 1, refresh = 0
@@ -494,45 +581,6 @@ by
 provide more appropriate uncertainty quantification and should be
 preferred to those of
 ![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}").
-
-## Alternative model comparison
-
-Pareteo-smoothed importance sampling (PSIS) for approximate
-leave-one-out cross-validation (LOO-CV) provides an easy to implement
-measure of model fit. Although time series data are not exchangeable and
-violate the assumptions underpinning LOO-CV, PSIS LOO-CV offers an
-efficient approach to model comparison. Applying this technique to
-![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
-and
-![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty")
-fit to COVID-19 cases from December 10, 2020, to January 31 2020, we
-find that all Pareto-![k](https://latex.codecogs.com/png.latex?k "k")
-diagnostic values are less than 0.7, indicating that both models fit the
-data well.
-
-``` r
-loo_0.1 <- loo(M_0.1, moment_match = TRUE)
-#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
-loo_inf <- loo(M_inf, moment_match = TRUE)
-#> Warning: Some Pareto k diagnostic values are slightly high. See help('pareto-k-diagnostic') for details.
-```
-
-|        | elpd\_diff | se\_diff | elpd\_loo | se\_elpd\_loo | p\_loo | se\_p\_loo |  looic | se\_looic |
-|:-------|-----------:|---------:|----------:|--------------:|-------:|-----------:|-------:|----------:|
-| model1 |       0.00 |      0.0 |   -265.93 |          3.61 |   6.27 |       1.14 | 531.86 |      7.21 |
-| model2 |     -16.07 |      5.8 |   -282.00 |          8.42 |   8.69 |       2.04 | 564.01 |     16.85 |
-
-PSIS-LOO model comparison favours
-![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
-(model1) over
-![\\mathcal M\_{\\infty}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B%5Cinfty%7D "\mathcal M_{\infty}")
-(model2).
-
-As before, this model comparison supports
-![\\mathcal M\_{0.1}](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%7B0.1%7D "\mathcal M_{0.1}")
-over
-![\\mathcal M\_\\infty](https://latex.codecogs.com/png.latex?%5Cmathcal%20M_%5Cinfty "\mathcal M_\infty"),
-although it will over-estimate the 1-SAP accuracy.
 
 ## Alternative priors
 
@@ -600,8 +648,8 @@ H_inf <- fit_Rt_hist(
   generation_interval_mean = 5, generation_interval_sd = 2.5,
   generation_interval_length = 21,
   bin_width = 7,
-  k = Inf,
-  cores = 4, refresh = 500
+  log_k_prior_mean = Inf,
+  cores = 4, refresh = 1000
 )
 ```
 

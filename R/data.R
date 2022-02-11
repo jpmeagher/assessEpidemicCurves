@@ -17,3 +17,15 @@
 #' }
 #' @source{https://www.cso.ie/en/releasesandpublications/br/b-cdc/covid-19deathsandcasesseries19/}
 "covid_incidence_roi_epidemiological_date"
+
+#' COVID-19 Test Positivity Rate for the Republic of Ireland
+#'
+#' The 7-Day test positivity rate (%) for the Republic of Ireland.
+#'
+#' #' @format A data frame with 679 observations of 2 variables:
+#' \describe{
+#'   \item{date}{Day 7 of the window.}
+#'   \item{rate}{The 7-Day positivity rate.}
+#' }
+#' @source{https://covid-19.geohive.ie/}
+"roi_covid_test_positivity_rate"

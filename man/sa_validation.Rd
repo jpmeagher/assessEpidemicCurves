@@ -8,7 +8,7 @@ sa_validation(
   epidemic_curve,
   seed_days,
   import_rate,
-  expected_generation_interval_mean,
+  generation_interval_mean,
   generation_interval_sd,
   generation_interval_length,
   next_day_cases = NA,
@@ -28,8 +28,8 @@ epidemic}
 \item{import_rate}{A vector of integers. The same length as epidemic_curve.
 The rate at which cases are imported from outwith the population.}
 
-\item{expected_generation_interval_mean}{A scalar. The mean of generation
-intervals between infector-infectee pairs.}
+\item{generation_interval_mean}{A scalar. The mean of generation intervals
+between infector-infectee pairs.}
 
 \item{generation_interval_sd}{A scalar. The standard deviation of  generation
 intervals between infector-infectee pairs.}
