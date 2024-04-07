@@ -7,7 +7,7 @@ using namespace Rcpp ;
 RCPP_MODULE(stan_fit4hist_Rt_mod) {
 
 
-    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("model_hist_Rt")
+    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("rstantools_model_hist_Rt")
 
     .constructor<SEXP,SEXP,SEXP>()
 
